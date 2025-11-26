@@ -1,22 +1,20 @@
 """ Generate the SQLite table """
-import uuid
-
 from sqlmodel import create_engine, SQLModel, Field, Relationship
 
 
 # Association table for many-to-many relationship
 class SupplyKeywordsLink(SQLModel, table=True):
-    supply_id: str = Field(default=None, foreign_key="winesupply.upc_locale_id", primary_key=True)
+    supply_id: str = Field(default=None, foreign_key="winesupply.upc_vintage_sd_id", primary_key=True)
     keyword_id: str = Field(default=None, foreign_key="keywords.keyword_id", primary_key=True)
 
 
 class SupplyGrapeLink(SQLModel, table=True):
-    supply_id: str = Field(default=None, foreign_key="winesupply.upc_locale_id", primary_key=True)
+    supply_id: str = Field(default=None, foreign_key="winesupply.upc_vintage_sd_id", primary_key=True)
     variety_id: str = Field(default=None, foreign_key="grapevariety.variety_id", primary_key=True)
 
 
 class SupplyFoodPairingLink(SQLModel, table=True):
-    supply_id: str = Field(default=None, foreign_key="winesupply.upc_locale_id", primary_key=True)
+    supply_id: str = Field(default=None, foreign_key="winesupply.upc_vintage_sd_id", primary_key=True)
     pairing_id: str = Field(default=None, foreign_key="foodpairing.pairing_id", primary_key=True)
 
 #############################################
@@ -44,7 +42,8 @@ class WineType(SQLModel, table=True):
 
 
 class WineSupply(SQLModel, table=True):
-    upc_locale_id: str = Field(primary_key=True, default=None)
+    # upc + vintage + supply/drank: ex: 12345678912-2020-S, 12345678912-XXXX-D (no vintage known)
+    upc_vintage_sd_id: str = Field(primary_key=True, default=None)
     name: str
     quantity: int
     upc_barcode_id: str | None = None

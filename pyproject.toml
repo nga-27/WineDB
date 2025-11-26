@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "WineDB"
-version = "0.7.0"
+version = "0.7.1"
 description = 'Database for current wines that exist in our stash!'
 authors = [
     {name = "Nick Amell", email = "namell91@gmail.com"}

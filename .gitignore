@@ -136,3 +136,6 @@ secrets/
 output/
 content/*.xlsx
 internal/
+
+# App-based
+wineDB.db

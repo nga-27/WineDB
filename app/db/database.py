@@ -1,4 +1,6 @@
 """ Generate the SQLite table """
+import uuid
+
 from sqlmodel import create_engine, SQLModel, Field, Relationship
 
 
@@ -20,7 +22,7 @@ class SupplyFoodPairingLink(SQLModel, table=True):
 #############################################
 
 class Country(SQLModel, table=True):
-    country_id: str = Field(primary_key=True)
+    country_id: str = Field(primary_key=True, default=None)
     name: str
     description: str | None = None
     wines: list["WineSupply"] = Relationship(back_populates="country")
@@ -28,21 +30,21 @@ class Country(SQLModel, table=True):
 
 class PhysicalLocation(SQLModel, table=True):
     """ Includes: Cellar, Fridge, Drank, etc. """
-    location_id: str = Field(primary_key=True)
+    location_id: str = Field(primary_key=True, default=None)
     name: str
     description: str | None = None
     wines: list["WineSupply"] = Relationship(back_populates="physical_location")
 
 
 class WineType(SQLModel, table=True):
-    type_id: str = Field(primary_key=True)
+    type_id: str = Field(primary_key=True, default=None)
     name: str
     description: str | None = None
     wines: list["WineSupply"] = Relationship(back_populates="wine_type")
 
 
 class WineSupply(SQLModel, table=True):
-    upc_locale_id: str = Field(primary_key=True)
+    upc_locale_id: str = Field(primary_key=True, default=None)
     name: str
     quantity: int
     upc_barcode_id: str | None = None
@@ -68,21 +70,21 @@ class WineSupply(SQLModel, table=True):
 
 
 class GrapeVariety(SQLModel, table=True):
-    variety_id: str = Field(primary_key=True)
+    variety_id: str = Field(primary_key=True, default=None)
     name: str
     description: str | None = None
     region: str | None = None
     wines: list[WineSupply] = Relationship(back_populates="grapes", link_model=SupplyGrapeLink)
 
 class FoodPairing(SQLModel, table=True):
-    pairing_id: str = Field(primary_key=True)
+    pairing_id: str = Field(primary_key=True, default=None)
     name: str
     description: str | None = None
     wines: list[WineSupply] = Relationship(back_populates="food_pairings", link_model=SupplyFoodPairingLink)
 
 
 class Keywords(SQLModel, table=True):
-    keyword_id: str = Field(primary_key=True)
+    keyword_id: str = Field(primary_key=True, default=None)
     keyword: str
     description: str | None = None
     wines: list[WineSupply] = Relationship(back_populates="keywords", link_model=SupplyKeywordsLink)
@@ -94,7 +96,8 @@ class DBInterface:
         self.__has_initialized = False
         self.sql_file_name = "wineDB.db"
         self.sql_url = f"sqlite:///{self.sql_file_name}"
-        self.engine = create_engine(self.sql_url, echo=True)
+        self.engine = create_engine(self.sql_url)
+        # self.engine = create_engine(self.sql_url, echo=True)
 
     def create_db_and_tables(self):
         if self.__has_initialized:

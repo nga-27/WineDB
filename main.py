@@ -1,14 +1,50 @@
+import os
+import subprocess
+import threading
+import time
+
 import uvicorn
 
-from app.libs.db.create_db import get_db_interface
+from app.db.database import get_db_interface
+from app.cmd_app.main_handler import (
+    run, startup, shutdown
+)
+
+BASE_URL = "http://localhost:8282"
+BASE_PORT = 8282
+
+def run_api():
+    # uvicorn.run("app.app:app", host="0.0.0.0", port=8282, reload=False, log_level="warning")
+    subprocess.run(
+        ["uvicorn", "app.app:app", "--log-level=warning", f"--port={BASE_PORT}"],
+        check=False
+    )
+
+
+def run_cmd_prompts():
+    """ Run the command prompt 'UI' """
+    startup(BASE_URL)
+    run(BASE_URL)
+    shutdown(BASE_URL)
+
 
 def run_app():
-    print("starting...")
     db_interface = get_db_interface()
     db_interface.create_db_and_tables()
-    print("done.")
 
-    uvicorn.run("app.app:app", host="0.0.0.0", port=8282, reload=False)
+    t_api = threading.Thread(target=run_api, name='API')
+    t_ui = threading.Thread(target=run_cmd_prompts, name='Command-Based UI')
+
+    t_api.start()
+    time.sleep(0.1)
+    t_ui.start()
+
+    t_ui.join()
+    t_api.join()
+
+    time.sleep(1)
+    print("Goodbye!")
+    time.sleep(2)
 
 
 if __name__ == "__main__":

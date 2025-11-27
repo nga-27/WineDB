@@ -11,6 +11,6 @@ def ascii_generator() -> List[str]:
     text.append("\033[35m \      /  |  | |  |  ||     |     |  | |  |  | \   / |     ||  |  |  |  |  |     ||  .  \|     |    \033[39m")
     text.append("\033[35m  \_/\_/  |____||__|__||_____|    |____||__|__|  \_/  |_____||__|__|  |__|   \___/ |__|\_||____/     \033[39m")
     text.append("")
-    text.append(f"{' ' * 32}\033[36mVersion: {version('winedb')} - by Nick Amell\033[39m")
+    text.append(f"{' ' * 33}\033[36mVersion: {version('winedb')} - by nga-27\033[39m")
     text.append("\r\n")
     return text

@@ -1,6 +1,8 @@
 """ main handler for the cmd_app """
 import time
 
+from terminal_ui_lite import TerminalUILite
+
 # from cmd_app.add_transaction import add_handler
 # from cmd_app.view_transaction import view_handler
 # from cmd_app.delete_transaction import delete_handler
@@ -14,24 +16,7 @@ from app.cmd_app.utils.api import handle_get_payload
 # from cmd_app.utils.file_io import copy_from_cloud, error_handler, push_to_cloud
 
 OPTION_STATES = {
-    "v": "view",
-    "view": "view",
-    "t": "view",
-    "transaction": "view",
-    "h": "history",
-    "history": "history",
-    "a": "add",
-    "add": "add",
-    "d": "delete",
-    "delete": "delete",
-    "s": "record",
-    "settle": "record",
-    "b": "balance",
-    "balance": "balance",
     "e": "exit",
-    "exit": "exit",
-    "q": "exit",
-    "quit": "quit"
 }
 
 def exit_handler(_: str) -> bool:
@@ -53,7 +38,7 @@ ACTION_FUNCTIONS = {
 }
 
 
-def what_to_do_options():
+def what_to_do_options(ui_manager: TerminalUILite) -> str:
     """ Prompts user to potential SplitWiser actions """
     matched = None
     while matched is None:
@@ -69,10 +54,14 @@ def what_to_do_options():
         # options += f"\t- {PrintColor.BLUE}SETTLE UP{PrintColor.NORMAL} / make a payment "
         # options += "(s or settle)\r\n"
         # options += f"\t- {PrintColor.YELLOW}EXIT{PrintColor.NORMAL} (e or exit, q or quit)"
-        print(options)
+        ui_manager.add_text_content(options)
         passed = input("\r\nSo... what would you like to do? ")
+        if len(passed) == 0:
+            print(f"\r\nI'm sorry, but '{passed}' is not a valid input. Please try again...\r\n")
+            time.sleep(2)
+            continue
         passed = passed.lower().strip()
-        matched = OPTION_STATES.get(passed)
+        matched = OPTION_STATES.get(passed[0])
         if not matched:
             print(f"\r\nI'm sorry, but '{passed}' is not a valid input. Please try again...\r\n")
             time.sleep(2)
@@ -80,7 +69,7 @@ def what_to_do_options():
 
 ###################################################
 
-def run(base_url: str):
+def run(base_url: str, ui_manager: TerminalUILite) -> None:
     """run
 
     Runs the main command loop of options
@@ -90,7 +79,7 @@ def run(base_url: str):
     """
     is_running = True
     while is_running:
-        action = what_to_do_options()
+        action = what_to_do_options(ui_manager)
         is_running = ACTION_FUNCTIONS[action](base_url)
 
 
@@ -133,7 +122,7 @@ def close_out_sync(pwd: str) -> bool:
     return True
 
 
-def startup(base_url: str) -> None:
+def startup(base_url: str, ui_manager: TerminalUILite) -> None:
     """startup
 
     Boots up the api and DB portion, and continues to try hitting the API until it is ready
@@ -151,7 +140,7 @@ def startup(base_url: str) -> None:
         time.sleep(1)
 
 
-def shutdown(base_url: str) -> None:
+def shutdown(base_url: str, ui_manager: TerminalUILite) -> None:
     """shutdown
 
     Shuts down the api (which saves the local DB to the xlsx db file)

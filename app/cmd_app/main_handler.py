@@ -1,48 +1,69 @@
 """ main handler for the cmd_app """
 import time
+from typing import Any
 
 from terminal_ui_lite import TerminalUILite
 
-# from cmd_app.add_transaction import add_handler
-# from cmd_app.view_transaction import view_handler
-# from cmd_app.delete_transaction import delete_handler
-# from cmd_app.record_payment import record_handler
-# from cmd_app.view_balances import view_balances_handler
-# from cmd_app.view_payments import view_payments_handler
-
 from app.cmd_app.utils.api import handle_get_payload
-# from cmd_app.utils.constants import PrintColor
+from app.cmd_app.utils.constants import PrintColor
 # from cmd_app.utils.title_page import show_title
 # from cmd_app.utils.file_io import copy_from_cloud, error_handler, push_to_cloud
 
+CALLBACK_DATA = None
+
 OPTION_STATES = {
+    "b": "bottle",
+    "bottle": "bottle",
+    "g": "grape",
+    "grape": "grape",
+    "q": "exit",
+    "quit": "exit",
     "e": "exit",
+    "exit": "exit",
 }
 
-def exit_handler(_: str) -> bool:
+def exit_handler(ui_manager: TerminalUILite) -> bool:
     """ Handles exiting the program """
     # print(f"\r\nWe'll start to {PrintColor.YELLOW}EXIT{PrintColor.NORMAL}...")
-    print("\r\nExiting...")
+    ui_manager.add_text_content("\r\nExiting...")
     time.sleep(1)
     return False
 
 
+def grape_handler(ui_manager: TerminalUILite) -> bool:
+    """ Handles adding grape varieties """
+    ui_manager.add_text_content("\r\nAdding grape varieties... (not yet implemented)")
+    time.sleep(2)
+    return True
+
+def bottle_handler(ui_manager: TerminalUILite) -> bool:
+    """ Handles adding bottles """
+    ui_manager.add_text_content("\r\nAdding bottles... (not yet implemented)")
+    time.sleep(2)
+    return True
+
+
 ACTION_FUNCTIONS = {
-    # "balance": view_balances_handler,
-    # "view": view_handler,
-    # "history": view_payments_handler,
-    # "add": add_handler,
-    # "delete": delete_handler,
-    # "record": record_handler,
-    "exit": exit_handler
+    "bottle": bottle_handler,
+    "grape": grape_handler,
+    "exit": exit_handler,
 }
+
+
+def __callback_function(data: Any) -> None:
+    global CALLBACK_DATA
+    CALLBACK_DATA = data
 
 
 def what_to_do_options(ui_manager: TerminalUILite) -> str:
     """ Prompts user to potential SplitWiser actions """
     matched = None
     while matched is None:
-        options = "What would you like to do? Options include:\r\n\r\n"
+        ui_manager.clear_content()
+        time.sleep(0.5)
+        ui_manager.add_text_content("What would you like to do? Options include:\r\n\r\n")
+        ui_manager.add_text_content(f"\t- Add {PrintColor.GREEN}GRAPE VARIETIES{PrintColor.NORMAL} (g or grape)")
+        ui_manager.add_text_content(f"\t- Add {PrintColor.MAGENTA}BOTTLES{PrintColor.NORMAL} (b or bottle)")
         # options += f"\t- View {PrintColor.MAGENTA}BALANCES{PrintColor.NORMAL} between "
         # options += "accounts (b or balance)\r\n"
         # options += f"\t- View {PrintColor.CYAN}TRANSACTIONS{PrintColor.NORMAL} "
@@ -53,9 +74,16 @@ def what_to_do_options(ui_manager: TerminalUILite) -> str:
         # options += f"\t- {PrintColor.RED}DELETE{PrintColor.NORMAL} Transaction (d or delete)\r\n"
         # options += f"\t- {PrintColor.BLUE}SETTLE UP{PrintColor.NORMAL} / make a payment "
         # options += "(s or settle)\r\n"
-        # options += f"\t- {PrintColor.YELLOW}EXIT{PrintColor.NORMAL} (e or exit, q or quit)"
-        ui_manager.add_text_content(options)
-        passed = input("\r\nSo... what would you like to do? ")
+        ui_manager.add_text_content(f"\t- {PrintColor.YELLOW}EXIT{PrintColor.NORMAL} (e or exit, q or quit)")
+        ui_manager.add_text_content("\r\n")
+        ui_manager.add_input_content("\r\nSo... what would you like to do? ", __callback_function)
+        global CALLBACK_DATA
+        while CALLBACK_DATA is None:
+            time.sleep(0.1)
+        ui_manager.clear_content()
+        time.sleep(1)
+        passed = CALLBACK_DATA
+        CALLBACK_DATA = None
         if len(passed) == 0:
             print(f"\r\nI'm sorry, but '{passed}' is not a valid input. Please try again...\r\n")
             time.sleep(2)
@@ -80,7 +108,7 @@ def run(base_url: str, ui_manager: TerminalUILite) -> None:
     is_running = True
     while is_running:
         action = what_to_do_options(ui_manager)
-        is_running = ACTION_FUNCTIONS[action](base_url)
+        is_running = ACTION_FUNCTIONS[action](ui_manager)
 
 
 def boot_up_sync(pwd: str) -> bool:

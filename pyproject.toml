@@ -4,17 +4,16 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "WineDB"
-version = "0.7.1"
-description = 'Database for current wines that exist in our stash!'
+version = "0.0.3"
+description = 'Database for managing and analyzing wine consumption'
 authors = [
     {name = "Nick Amell", email = "namell91@gmail.com"}
 ]
-requires-python = ">=3.10.0, <3.13.0"
+requires-python = ">=3.11.0, <3.13.0"
 license = {text = "MIT"}
 classifiers = [
     'Programming Language :: Python',
     'Programming Language :: Python :: 3',
-    'Programming Language :: Python :: 3.10',
     'Programming Language :: Python :: 3.11',
     'Programming Language :: Python :: 3.12',
 ]

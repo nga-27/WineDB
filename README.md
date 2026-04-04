@@ -1,6 +1,6 @@
 # WineDB
 
-Database for current wines that exist in our stash!
+Database for managing and analyzing wine consumption.
 
 <img src="static/wine_elves.jpeg" alt="WineDB Patrons" width=500 />
 

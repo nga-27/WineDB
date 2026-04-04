@@ -3,8 +3,9 @@ import subprocess
 import threading
 import time
 
-import uvicorn
+from terminal_ui_lite import TerminalUILite
 
+from static.ascii_generator import ascii_generator
 from app.db.database import get_db_interface
 from app.cmd_app.main_handler import (
     run, startup, shutdown
@@ -14,7 +15,6 @@ BASE_URL = "http://localhost:8282"
 BASE_PORT = 8282
 
 def run_api():
-    # uvicorn.run("app.app:app", host="0.0.0.0", port=8282, reload=False, log_level="warning")
     subprocess.run(
         ["uvicorn", "app.app:app", "--log-level=warning", f"--port={BASE_PORT}"],
         check=False
@@ -23,9 +23,10 @@ def run_api():
 
 def run_cmd_prompts():
     """ Run the command prompt 'UI' """
-    startup(BASE_URL)
-    run(BASE_URL)
-    shutdown(BASE_URL)
+    ui_manager = TerminalUILite(ascii_generator)
+    startup(BASE_URL, ui_manager)
+    run(BASE_URL, ui_manager)
+    shutdown(BASE_URL, ui_manager)
 
 
 def run_app():

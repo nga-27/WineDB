@@ -4,7 +4,7 @@ import datetime
 
 from fastapi import FastAPI
 
-from app.routers import grapes, countries, wine_types
+from app.routers import grapes, countries, wine_types, locations, wine_supplies, keywords, food_pairings
 
 
 app = FastAPI(title="WineDB API", version="1.0.0", description="API for WineDB application.")
@@ -12,6 +12,10 @@ app = FastAPI(title="WineDB API", version="1.0.0", description="API for WineDB a
 app.include_router(grapes.ROUTER)
 app.include_router(countries.ROUTER)
 app.include_router(wine_types.ROUTER)
+app.include_router(locations.ROUTER)
+app.include_router(wine_supplies.ROUTER)
+app.include_router(keywords.ROUTER)
+app.include_router(food_pairings.ROUTER)
 
 
 @app.get("/")

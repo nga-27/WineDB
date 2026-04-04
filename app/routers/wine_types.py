@@ -23,7 +23,7 @@ def get_wine_types() -> List[WineType]:
 @ROUTER.post("/", status_code=201)
 def create_wine_type(wine_type: WineType) -> str:
     for key, value in vars(wine_type).items():
-        if key == "variety_id":
+        if key == "type_id":
             setattr(wine_type, key, str(uuid.uuid4()))
         elif value is None or value == "string":
             setattr(wine_type, key, None)

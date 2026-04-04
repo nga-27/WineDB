@@ -139,3 +139,6 @@ internal/
 
 # App-based
 wineDB.db
+
+# Office-related temp files
+~$*

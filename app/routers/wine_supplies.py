@@ -1,9 +1,9 @@
 from typing import List
 import uuid
 
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
-from sqlmodel import Session
+from sqlmodel import Session, select
 
 from app.db.database import (
     get_db_interface,
@@ -34,18 +34,42 @@ class WineSupplyCreate(BaseModel):
     grape_ids: list[str] = []
     food_pairing_ids: list[str] = []
 
+class WineSupplyQuantityUpdate(BaseModel):
+    bottle_id: str
+    new_quantity: int
+
 
 ROUTER = APIRouter(
-    prefix="/wine_supplies"
+    prefix="/wine_supplies",
+    tags=["wine_supplies"]
 )
 
 
 @ROUTER.get("/", status_code=200)
-def get_wine_supplies() -> List[WineSupply]:
+def get_wine_supplies(name: str | None = None, vintage: str | None = None) -> List[WineSupply]:
     wine_supplies: List[WineSupply] = []
     with Session(get_db_interface().engine) as session:
-        wine_supplies = session.query(WineSupply).all()
+        stmt = select(WineSupply)
+        if name:
+            stmt = stmt.where(WineSupply.name.ilike(f"%{name}%"))
+        if vintage:
+            stmt = stmt.where(WineSupply.vintage == vintage)
+        wine_supplies = session.exec(stmt).all()
     return wine_supplies
+
+
+@ROUTER.patch("/quantity", status_code=200)
+def update_wine_supply_quantity(quantity_update: WineSupplyQuantityUpdate) -> str:
+    bottle_id = quantity_update.bottle_id
+    new_quantity = quantity_update.new_quantity
+    with Session(get_db_interface().engine) as session:
+        supply = session.get(WineSupply, bottle_id)
+        if not supply:
+            raise HTTPException(status_code=404, detail=f"No supply found with id {bottle_id}")
+        supply.quantity = new_quantity
+        session.add(supply)
+        session.commit()
+    return "OK"
 
 
 @ROUTER.post("/", status_code=201)

@@ -8,7 +8,8 @@ from app.db.database import get_db_interface, FoodPairing
 
 
 ROUTER = APIRouter(
-    prefix="/food_pairings"
+    prefix="/food_pairings",
+    tags=["food_pairings"]
 )
 
 

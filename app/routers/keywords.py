@@ -8,7 +8,8 @@ from app.db.database import get_db_interface, Keywords
 
 
 ROUTER = APIRouter(
-    prefix="/keywords"
+    prefix="/keywords",
+    tags=["keywords"]
 )
 
 

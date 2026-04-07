@@ -8,7 +8,8 @@ from app.db.database import get_db_interface, PhysicalLocation
 
 
 ROUTER = APIRouter(
-    prefix="/locations"
+    prefix="/locations",
+    tags=["locations"]
 )
 
 

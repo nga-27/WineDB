@@ -8,7 +8,8 @@ from app.db.database import get_db_interface, WineType
 
 
 ROUTER = APIRouter(
-    prefix="/wine_types"
+    prefix="/wine_types",
+    tags=["wine_types"]
 )
 
 

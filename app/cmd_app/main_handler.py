@@ -6,10 +6,13 @@ from terminal_ui_lite import TerminalUILite
 
 from app.cmd_app.utils.api import handle_get_payload
 from app.cmd_app.utils.constants import PrintColor
+from app.cmd_app.handlers import bottle_handler, grape_handler
+
 # from cmd_app.utils.title_page import show_title
 # from cmd_app.utils.file_io import copy_from_cloud, error_handler, push_to_cloud
 
-CALLBACK_DATA = None
+DEFAULT_CALLBACK_DATA = "ASDFAKSDLJ;FASDFLKJHASDLFKjBNALSKJDfH"
+CALLBACK_DATA = DEFAULT_CALLBACK_DATA
 
 OPTION_STATES = {
     "b": "bottle",
@@ -28,19 +31,6 @@ def exit_handler(ui_manager: TerminalUILite) -> bool:
     ui_manager.add_text_content("\r\nExiting...")
     time.sleep(1)
     return False
-
-
-def grape_handler(ui_manager: TerminalUILite) -> bool:
-    """ Handles adding grape varieties """
-    ui_manager.add_text_content("\r\nAdding grape varieties... (not yet implemented)")
-    time.sleep(2)
-    return True
-
-def bottle_handler(ui_manager: TerminalUILite) -> bool:
-    """ Handles adding bottles """
-    ui_manager.add_text_content("\r\nAdding bottles... (not yet implemented)")
-    time.sleep(2)
-    return True
 
 
 ACTION_FUNCTIONS = {
@@ -62,37 +52,30 @@ def what_to_do_options(ui_manager: TerminalUILite) -> str:
         ui_manager.clear_content()
         time.sleep(0.5)
         ui_manager.add_text_content("What would you like to do? Options include:\r\n\r\n")
+
         ui_manager.add_text_content(f"\t- Add {PrintColor.GREEN}GRAPE VARIETIES{PrintColor.NORMAL} (g or grape)")
         ui_manager.add_text_content(f"\t- Add {PrintColor.MAGENTA}BOTTLES{PrintColor.NORMAL} (b or bottle)")
-        # options += f"\t- View {PrintColor.MAGENTA}BALANCES{PrintColor.NORMAL} between "
-        # options += "accounts (b or balance)\r\n"
-        # options += f"\t- View {PrintColor.CYAN}TRANSACTIONS{PrintColor.NORMAL} "
-        # options += "(v or view, t or transaction)\r\n"
-        # options += f"\t- View payment {PrintColor.HIGHLIGHT}HISTORY{PrintColor.NORMAL} "
-        # options += "(h or history)\r\n"
-        # options += f"\t- {PrintColor.GREEN}ADD{PrintColor.NORMAL} transactions (a or add)\r\n"
-        # options += f"\t- {PrintColor.RED}DELETE{PrintColor.NORMAL} Transaction (d or delete)\r\n"
-        # options += f"\t- {PrintColor.BLUE}SETTLE UP{PrintColor.NORMAL} / make a payment "
-        # options += "(s or settle)\r\n"
         ui_manager.add_text_content(f"\t- {PrintColor.YELLOW}EXIT{PrintColor.NORMAL} (e or exit, q or quit)")
         ui_manager.add_text_content("\r\n")
         ui_manager.add_input_content("\r\nSo... what would you like to do? ", __callback_function)
+
         global CALLBACK_DATA
-        while CALLBACK_DATA is None:
+        while CALLBACK_DATA is not None and CALLBACK_DATA == DEFAULT_CALLBACK_DATA:
             time.sleep(0.1)
         ui_manager.clear_content()
         time.sleep(1)
         passed = CALLBACK_DATA
-        CALLBACK_DATA = None
-        if len(passed) == 0:
-            print(f"\r\nI'm sorry, but '{passed}' is not a valid input. Please try again...\r\n")
+        CALLBACK_DATA = DEFAULT_CALLBACK_DATA
+        if passed is None or len(passed) == 0:
+            ui_manager.add_text_content(f"\r\nI'm sorry, but '{passed}' is not a valid input. Please try again...\r\n")
             time.sleep(2)
             continue
         passed = passed.lower().strip()
         matched = OPTION_STATES.get(passed[0])
         if not matched:
-            print(f"\r\nI'm sorry, but '{passed}' is not a valid input. Please try again...\r\n")
+            ui_manager.add_text_content(f"\r\nI'm sorry, but '{passed}' is not a valid input. Please try again...\r\n")
             time.sleep(2)
+        ui_manager.clear_content()
     return matched
 
 ###################################################

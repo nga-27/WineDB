@@ -33,8 +33,8 @@ def run_app():
     db_interface = get_db_interface()
     db_interface.create_db_and_tables()
 
-    t_api = threading.Thread(target=run_api, name='API')
-    t_ui = threading.Thread(target=run_cmd_prompts, name='Command-Based UI')
+    t_api = threading.Thread(target=run_api, name='API', daemon=True)
+    t_ui = threading.Thread(target=run_cmd_prompts, name='Command-Based UI', daemon=True)
 
     t_api.start()
     time.sleep(0.1)

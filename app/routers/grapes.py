@@ -8,7 +8,8 @@ from app.db.database import get_db_interface, GrapeVariety
 
 
 ROUTER = APIRouter(
-    prefix="/grape_varieties"
+    prefix="/grape_varieties",
+    tags=["grape_varieties"]
 )
 
 

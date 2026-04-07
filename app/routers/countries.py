@@ -8,7 +8,8 @@ from app.db.database import get_db_interface, Country
 
 
 ROUTER = APIRouter(
-    prefix="/countries"
+    prefix="/countries",
+    tags=["countries"]
 )
 
 @ROUTER.get("/", status_code=200)

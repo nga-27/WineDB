@@ -63,7 +63,13 @@ def seed_database():
         response = requests.post(f"{base_url}/countries/", json=country)
         print(f"Created country {country['name']}: {response.status_code}")
 
-    # Sample data for wine types
+    # Fetch country IDs for regions
+    def map_by_name(endpoint, id_key="location_id"):
+        response = requests.get(f"{base_url}/{endpoint}/")
+        response.raise_for_status()
+        return {item["name"]: item[id_key] for item in response.json()}
+
+    country_ids = map_by_name("countries", id_key="country_id")
     wine_types = [
         {"name": "Red", "description": "Full-bodied wines from dark grapes."},
         {"name": "White", "description": "Light wines from green or yellow grapes."},
@@ -78,18 +84,42 @@ def seed_database():
         response = requests.post(f"{base_url}/wine_types/", json=wine_type)
         print(f"Created wine type {wine_type['name']}: {response.status_code}")
 
+    # Sample data for regions
+    regions = [
+        {"name": "Bordeaux", "description": "Famous wine region in southwestern France.", "country_id": country_ids.get("France")},
+        {"name": "Burgundy", "description": "Historic wine region in eastern France.", "country_id": country_ids.get("France")},
+        {"name": "Loire", "description": "Loire Valley wine region in France.", "country_id": country_ids.get("France")},
+        {"name": "Rhône", "description": "Rhône Valley wine region in France.", "country_id": country_ids.get("France")},
+        {"name": "Mosel", "description": "Wine region in Germany known for Riesling.", "country_id": country_ids.get("Germany")},
+        {"name": "Mendoza", "description": "Major wine region in Argentina.", "country_id": country_ids.get("Argentina")},
+        {"name": "Rioja", "description": "Renowned wine region in northern Spain.", "country_id": country_ids.get("Spain")},
+        {"name": "Tuscany", "description": "Wine region in central Italy.", "country_id": country_ids.get("Italy")},
+        {"name": "Marlborough", "description": "Premier wine region in New Zealand.", "country_id": country_ids.get("New Zealand")},
+        {"name": "Sonoma County", "description": "California wine region in the United States.", "country_id": country_ids.get("United States")},
+        {"name": "Barossa Valley", "description": "Wine region in South Australia.", "country_id": country_ids.get("Australia")},
+        {"name": "Douro Valley", "description": "Port wine region in Portugal.", "country_id": country_ids.get("Portugal")}
+    ]
+
+    # Seed regions
+    for region in regions:
+        response = requests.post(f"{base_url}/regions/", json=region)
+        print(f"Created region {region['name']}: {response.status_code}")
+
+    # Fetch region IDs for grape varieties
+    region_ids = map_by_name("regions", id_key="region_id")
+
     # Sample data for grape varieties
     grape_varieties = [
-        {"name": "Cabernet Sauvignon", "description": "Bold red grape, often blended.", "region": "Bordeaux"},
-        {"name": "Chardonnay", "description": "Versatile white grape.", "region": "Burgundy"},
-        {"name": "Pinot Noir", "description": "Light red grape, finicky to grow.", "region": "Burgundy"},
-        {"name": "Merlot", "description": "Soft red grape.", "region": "Bordeaux"},
-        {"name": "Sauvignon Blanc", "description": "Crisp white grape.", "region": "Loire"},
-        {"name": "Syrah", "description": "Spicy red grape.", "region": "Rhône"},
-        {"name": "Riesling", "description": "Aromatic white grape.", "region": "Mosel"},
-        {"name": "Malbec", "description": "Bold red grape.", "region": "Mendoza"},
-        {"name": "Sangiovese", "description": "Italian red grape.", "region": "Tuscany"},
-        {"name": "Tempranillo", "description": "Spanish red grape.", "region": "Rioja"}
+        {"name": "Cabernet Sauvignon", "description": "Bold red grape, often blended.", "region_id": region_ids.get("Bordeaux")},
+        {"name": "Chardonnay", "description": "Versatile white grape.", "region_id": region_ids.get("Burgundy")},
+        {"name": "Pinot Noir", "description": "Light red grape, finicky to grow.", "region_id": region_ids.get("Burgundy")},
+        {"name": "Merlot", "description": "Soft red grape.", "region_id": region_ids.get("Bordeaux")},
+        {"name": "Sauvignon Blanc", "description": "Crisp white grape.", "region_id": region_ids.get("Loire")},
+        {"name": "Syrah", "description": "Spicy red grape.", "region_id": region_ids.get("Rhône")},
+        {"name": "Riesling", "description": "Aromatic white grape.", "region_id": region_ids.get("Mosel")},
+        {"name": "Malbec", "description": "Bold red grape.", "region_id": region_ids.get("Mendoza")},
+        {"name": "Sangiovese", "description": "Italian red grape.", "region_id": region_ids.get("Tuscany")},
+        {"name": "Tempranillo", "description": "Spanish red grape.", "region_id": region_ids.get("Rioja")}
     ]
 
     # Seed grape varieties
@@ -110,14 +140,8 @@ def seed_database():
         print(f"Created location {location['name']}: {response.status_code}")
 
     # Fetch created IDs for relationships
-    def map_by_name(endpoint, id_key="location_id"):
-        response = requests.get(f"{base_url}/{endpoint}/")
-        response.raise_for_status()
-        return {item["name"]: item[id_key] for item in response.json()}
-
     location_ids = map_by_name("locations", id_key="location_id")
     wine_type_ids = map_by_name("wine_types", id_key="type_id")
-    country_ids = map_by_name("countries", id_key="country_id")
     grape_varieties = requests.get(f"{base_url}/grape_varieties/").json()
     grape_ids = {item["name"]: item["variety_id"] for item in grape_varieties}
 
@@ -167,7 +191,7 @@ def seed_database():
             "quantity": 3,
             "vintage": "2015",
             "vendor": "Wine Merchant",
-            "region": "Bordeaux",
+            "region_id": region_ids.get("Bordeaux"),
             "pct_alcohol": "13.5%",
             "drink_by_date": "2035-12-31",
             "tasting_notes": "Black fruit, cedar, firm tannins.",
@@ -184,7 +208,7 @@ def seed_database():
             "quantity": 6,
             "vintage": "2022",
             "vendor": "Importer Co.",
-            "region": "Marlborough",
+            "region_id": region_ids.get("Marlborough"),
             "pct_alcohol": "13.0%",
             "drink_by_date": "2026-08-01",
             "tasting_notes": "Citrus, green apple, crisp acidity.",
@@ -201,7 +225,7 @@ def seed_database():
             "quantity": 2,
             "vintage": "2018",
             "vendor": "Direct from winery",
-            "region": "Sonoma County",
+            "region_id": region_ids.get("Sonoma County"),
             "pct_alcohol": "14.7%",
             "drink_by_date": "2030-11-01",
             "tasting_notes": "Dark berries, pepper, balanced acidity.",

@@ -1,10 +1,16 @@
-from typing import List
+from typing import List, Union
 import uuid
 
 from fastapi import APIRouter
-from sqlmodel import Session
+from pydantic import BaseModel
+from sqlmodel import Session, select
 
 from app.db.database import get_db_interface, Country
+
+
+class CreateCountryRequest(BaseModel):
+    name: str
+    description: str | None
 
 
 ROUTER = APIRouter(
@@ -13,22 +19,25 @@ ROUTER = APIRouter(
 )
 
 @ROUTER.get("/", status_code=200)
-def get_countries() -> List[Country]:
+def get_countries(name: Union[str, None] = None) -> List[Country]:
     countries: List[Country] = []
     with Session(get_db_interface().engine) as session:
-        countries = session.query(Country).all()
+        stmt = select(Country)
+        if name:
+            stmt = stmt.where(Country.name.ilike(f"%{name}%"))
+        countries = session.exec(stmt).all()
     return countries
 
 
 @ROUTER.post("/", status_code=201)
-def create_country(country: Country) -> str:
-    for key, value in vars(country).items():
-        if key == "country_id":
-            setattr(country, key, str(uuid.uuid4()))
-        elif value is None or value == "string":
-            setattr(country, key, None)
+def create_country(country: CreateCountryRequest) -> str:
+    country_obj = Country(
+        country_id=str(uuid.uuid4()),
+        name=country.name,
+        description=country.description
+    )
     with Session(get_db_interface().engine) as session:
-        session.add(country)
+        session.add(country_obj)
         session.commit()
-        session.refresh(country)
-    return "OK"
+        session.refresh(country_obj)
+    return country_obj.country_id

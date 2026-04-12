@@ -1,10 +1,10 @@
 """ Utilities for API calls for bottles """
-from typing import Any, List, Tuple, Union
+from typing import List, Tuple, Union
 
 import requests
 
 
-def search_for_content(name: str, vintage: str | None = None) -> List[str]:
+def search_supply_for_content(name: str, vintage: str | None = None) -> List[str]:
     """ Placeholder function to search for content based on user input """
     if vintage:
         results = requests.get(f"http://localhost:8282/wine_supplies?name={name}&vintage={vintage}")

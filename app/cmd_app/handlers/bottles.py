@@ -5,32 +5,12 @@ from typing import Any, List, Tuple, Union
 from terminal_ui_lite import TerminalUILite
 
 from app.cmd_app.api_utils.bottles import (
-    search_for_content, increase_bottle_supply, create_bottle_entry
+    search_supply_for_content, increase_bottle_supply, create_bottle_entry
 )
-
-
-DEFAULT_CALLBACK_DATA = "ASDFAKSDLJ;FASDFLKJHASDLFKjBNALSKJDfH"
-
-class BottleHandler:
-    """ Callback handling class"""
-
-    def __init__(self, ui_manager: TerminalUILite):
-        self.ui_manager = ui_manager
-        self.__callback_data = DEFAULT_CALLBACK_DATA
-    
-    def handle_input(self, prompt: str, none_on_skip: bool = False) -> Union[str, None]:
-        """ Prompts user for input and returns it """
-        self.ui_manager.add_input_content(prompt, self.__callback_function)
-        while self.__callback_data is not None and self.__callback_data == DEFAULT_CALLBACK_DATA:
-            time.sleep(0.1)
-        data = self.__callback_data
-        self.__callback_data = DEFAULT_CALLBACK_DATA
-        if none_on_skip and data is not None and len(data) == 0:
-            return None
-        return data
-    
-    def __callback_function(self, data: Any) -> None:
-        self.__callback_data = data
+from app.cmd_app.api_utils.regions import search_regions_for_content
+from .generic import process_linking_input
+from .regions import process_region_creation
+from .utils import BottleHandler
 
 
 def bottle_handler(ui_manager: TerminalUILite) -> bool:
@@ -52,7 +32,7 @@ def process_name_input(bottler: BottleHandler) -> tuple[str, str | None, bool]:
     name = bottler.handle_input("What's the name of the wine? (-s for search) ")
     if "-s" in name:
         search_partial = name.replace("-s", "").strip()
-        search_results = search_for_content(search_partial)
+        search_results = search_supply_for_content(search_partial)
         bottler.ui_manager.add_text_content("\r\n")
         for i, name in enumerate(search_results):
             bottler.ui_manager.add_text_content(f"\t - [{i+1}] {name}")
@@ -109,7 +89,10 @@ def process_bottle_input_data(ui_manager: TerminalUILite) -> None:
     quantity = 1
     if quantity_response.isdigit() and int(quantity_response) > 0:
         quantity = int(quantity_response)
-    region = bottler.handle_input("\r\nWhich region is it from? (hit 'enter' to skip) ", none_on_skip=True)
+
+    region_name, region_id = process_linking_input(bottler, "region", search_regions_for_content)
+    region_id = process_region_creation(region_name, region_id, bottler)
+
     pct_alcohol = bottler.handle_input("\r\nWhat's the percentage of alcohol? (hit 'enter' to skip) ", none_on_skip=True)
     drink_by_date = bottler.handle_input("\r\nWhat's the drink-by date? (hit 'enter' to skip) ", none_on_skip=True)
     tasting_notes = bottler.handle_input("\r\nAny tasting notes? (hit 'enter' to skip) ", none_on_skip=True)
@@ -124,7 +107,7 @@ def process_bottle_input_data(ui_manager: TerminalUILite) -> None:
     ui_manager.add_text_content(f"\tWinery: {winery}")
     ui_manager.add_text_content(f"\tBarcode: {barcode}")
     ui_manager.add_text_content(f"\tQuantity: {quantity}")
-    ui_manager.add_text_content(f"\tRegion: {region}")
+    ui_manager.add_text_content(f"\tRegion: {region_name}")
     ui_manager.add_text_content(f"\t% Alcohol: {pct_alcohol}")
     ui_manager.add_text_content(f"\tDrink-by date: {drink_by_date}")
     ui_manager.add_text_content(f"\tTasting notes: {tasting_notes}")
@@ -139,7 +122,7 @@ def process_bottle_input_data(ui_manager: TerminalUILite) -> None:
             vintage=vintage,
             upc_barcode_id=barcode,
             vendor=winery,
-            region=region,
+            region=region_id,
             pct_alcohol=pct_alcohol,
             drink_by_date=drink_by_date,
             tasting_notes=tasting_notes,

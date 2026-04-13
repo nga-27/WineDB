@@ -2,9 +2,15 @@ from typing import List
 import uuid
 
 from fastapi import APIRouter
-from sqlmodel import Session
+from pydantic import BaseModel
+from sqlmodel import Session, select
 
 from app.db.database import get_db_interface, Keywords
+
+
+class CreateKeywordRequest(BaseModel):
+    keyword: str
+    description: str | None = None
 
 
 ROUTER = APIRouter(
@@ -14,22 +20,33 @@ ROUTER = APIRouter(
 
 
 @ROUTER.get("/", status_code=200)
-def get_keywords() -> List[Keywords]:
+def get_keywords(name: str | None = None) -> List[Keywords]:
     keywords: List[Keywords] = []
     with Session(get_db_interface().engine) as session:
-        keywords = session.query(Keywords).all()
+        stmt = select(Keywords)
+        if name:
+            stmt = stmt.where(Keywords.name.ilike(f"%{name}%"))
+        keywords = session.exec(stmt).all()
     return keywords
 
 
 @ROUTER.post("/", status_code=201)
-def create_keyword(keyword: Keywords) -> str:
-    for key, value in vars(keyword).items():
-        if key == "keyword_id":
-            setattr(keyword, key, str(uuid.uuid4()))
-        elif value is None or value == "string":
-            setattr(keyword, key, None)
+def create_keyword(keyword: CreateKeywordRequest) -> str:
+    keywords: List[Keywords] = []
     with Session(get_db_interface().engine) as session:
-        session.add(keyword)
+        stmt = select(Keywords)
+        stmt = stmt.where(Keywords.keyword == keyword.keyword)
+        keywords = session.exec(stmt).all()
+    if len(keywords) > 0:
+        return keywords[0].keyword_id
+
+    keyword_obj = Keywords(
+        keyword_id=str(uuid.uuid4()),
+        keyword=keyword.keyword,
+        description=keyword.description
+    )
+    with Session(get_db_interface().engine) as session:
+        session.add(keyword_obj)
         session.commit()
-        session.refresh(keyword)
-    return "OK"
+        session.refresh(keyword_obj)
+    return keyword_obj.keyword_id

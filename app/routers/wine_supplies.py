@@ -20,7 +20,7 @@ class WineSupplyCreate(BaseModel):
     upc_barcode_id: str | None = None
     vintage: str | None = None
     vendor: str | None = None
-    region: str | None = None
+    region_id: str | None = None
     pct_alcohol: str | None = None
     drink_by_date: str | None = None
     tasting_notes: str | None = None
@@ -76,6 +76,19 @@ def update_wine_supply_quantity(quantity_update: WineSupplyQuantityUpdate) -> st
 def create_wine_supply(wine_supply: WineSupplyCreate) -> str:
     if not wine_supply.upc_vintage_sd_id:
         wine_supply.upc_vintage_sd_id = str(uuid.uuid4())
+    
+    wine_supplies: List[WineSupply] = []
+    with Session(get_db_interface().engine) as session:
+        stmt = select(WineSupply)
+        if wine_supply.name:
+            stmt = stmt.where(WineSupply.name == wine_supply.name)
+        if wine_supply.vintage:
+            stmt = stmt.where(WineSupply.vintage == wine_supply.vintage)
+        wine_supplies = session.exec(stmt).all()
+    if len(wine_supplies) > 0:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Supply with name '{wine_supply.name}' and vintage '{wine_supply.vintage}' already exists.")
 
     db_supply = WineSupply(
         upc_vintage_sd_id=wine_supply.upc_vintage_sd_id,
@@ -84,7 +97,7 @@ def create_wine_supply(wine_supply: WineSupplyCreate) -> str:
         upc_barcode_id=wine_supply.upc_barcode_id,
         vintage=wine_supply.vintage,
         vendor=wine_supply.vendor,
-        region=wine_supply.region,
+        region_id=wine_supply.region_id,
         pct_alcohol=wine_supply.pct_alcohol,
         drink_by_date=wine_supply.drink_by_date,
         tasting_notes=wine_supply.tasting_notes,
@@ -98,8 +111,10 @@ def create_wine_supply(wine_supply: WineSupplyCreate) -> str:
     )
 
     with Session(get_db_interface().engine) as session:
-        db_supply.grapes = [session.get(GrapeVariety, grape_id) for grape_id in wine_supply.grape_ids if grape_id]
-        db_supply.food_pairings = [session.get(FoodPairing, pairing_id) for pairing_id in wine_supply.food_pairing_ids if pairing_id]
+        db_supply.grapes = [
+            session.get(GrapeVariety, grape_id) for grape_id in wine_supply.grape_ids if grape_id]
+        db_supply.food_pairings = [
+            session.get(FoodPairing, pairing_id) for pairing_id in wine_supply.food_pairing_ids if pairing_id]
 
         session.add(db_supply)
         session.commit()

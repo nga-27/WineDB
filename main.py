@@ -1,8 +1,8 @@
 import os
-import subprocess
 import threading
 import time
 
+import uvicorn
 from terminal_ui_lite import TerminalUILite
 
 from static.ascii_generator import ascii_generator
@@ -10,14 +10,18 @@ from app.db.database import get_db_interface
 from app.cmd_app.main_handler import (
     run, startup, shutdown
 )
+from app.logging_config import LOGGING_CONFIG
 
 BASE_URL = "http://localhost:8282"
 BASE_PORT = 8282
 
 def run_api():
-    subprocess.run(
-        ["uvicorn", "app.app:app", "--log-level=warning", f"--port={BASE_PORT}"],
-        check=False
+    uvicorn.run(
+        "app.app:app",
+        host="127.0.0.1",
+        port=BASE_PORT,
+        log_config=LOGGING_CONFIG,
+        log_level="info",
     )
 
 

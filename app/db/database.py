@@ -23,7 +23,18 @@ class Country(SQLModel, table=True):
     country_id: str = Field(primary_key=True, default=None)
     name: str
     description: str | None = None
+    regions: list["Region"] = Relationship(back_populates="country")
     wines: list["WineSupply"] = Relationship(back_populates="country")
+
+
+class Region(SQLModel, table=True):
+    region_id: str = Field(primary_key=True, default=None)
+    name: str
+    description: str | None = None
+    country_id: str | None = Field(default=None, foreign_key="country.country_id")
+    country: Country | None = Relationship(back_populates="regions")
+    wines: list["WineSupply"] = Relationship(back_populates="region")
+    grapes: list["GrapeVariety"] = Relationship(back_populates="region")
 
 
 class PhysicalLocation(SQLModel, table=True):
@@ -49,7 +60,8 @@ class WineSupply(SQLModel, table=True):
     upc_barcode_id: str | None = None
     vintage: str | None = None
     vendor: str | None = None
-    region: str | None = None
+    region_id: str | None = Field(default=None, foreign_key="region.region_id")
+    region: Region | None = Relationship(back_populates="wines")
     pct_alcohol: str | None = None
     drink_by_date: str | None = None
     tasting_notes: str | None = None
@@ -72,7 +84,8 @@ class GrapeVariety(SQLModel, table=True):
     variety_id: str = Field(primary_key=True, default=None)
     name: str
     description: str | None = None
-    region: str | None = None
+    region_id: str | None = Field(default=None, foreign_key="region.region_id")
+    region: Region | None = Relationship(back_populates="grapes")
     wines: list[WineSupply] = Relationship(back_populates="grapes", link_model=SupplyGrapeLink)
 
 class FoodPairing(SQLModel, table=True):

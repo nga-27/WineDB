@@ -2,9 +2,15 @@ from typing import List
 import uuid
 
 from fastapi import APIRouter
-from sqlmodel import Session
+from pydantic import BaseModel
+from sqlmodel import Session, select
 
 from app.db.database import get_db_interface, GrapeVariety
+
+
+class GrapeVarietyCreate(BaseModel):
+    name: str
+    description: str | None = None
 
 
 ROUTER = APIRouter(
@@ -14,22 +20,33 @@ ROUTER = APIRouter(
 
 
 @ROUTER.get("/", status_code=200)
-def get_grape_varieties() -> List[GrapeVariety]:
+def get_grape_varieties(name: str | None = None) -> List[GrapeVariety]:
     grape_varieties: List[GrapeVariety] = []
     with Session(get_db_interface().engine) as session:
-        grape_varieties = session.query(GrapeVariety).all()
+        stmt = select(GrapeVariety)
+        if name:
+            stmt = stmt.where(GrapeVariety.name.ilike(f"%{name}%"))
+        grape_varieties = session.exec(stmt).all()
     return grape_varieties
 
 
 @ROUTER.post("/", status_code=201)
-def create_grape_variety(grape_variety: GrapeVariety) -> str:
-    for key, value in vars(grape_variety).items():
-        if key == "variety_id":
-            setattr(grape_variety, key, str(uuid.uuid4()))
-        elif value is None or value == "string":
-            setattr(grape_variety, key, None)
+def create_grape_variety(grape_variety: GrapeVarietyCreate) -> str:
+    grapes: List[GrapeVariety] = []
     with Session(get_db_interface().engine) as session:
-        session.add(grape_variety)
+        stmt = select(GrapeVariety)
+        stmt = stmt.where(GrapeVariety.name == grape_variety.name)
+        grapes = session.exec(stmt).all()
+    if len(grapes) > 0:
+        return grapes[0].variety_id
+
+    grape_variety_obj = GrapeVariety(
+        variety_id=str(uuid.uuid4()),
+        name=grape_variety.name,
+        description=grape_variety.description
+    )
+    with Session(get_db_interface().engine) as session:
+        session.add(grape_variety_obj)
         session.commit()
-        session.refresh(grape_variety)
-    return "OK"
+        session.refresh(grape_variety_obj)
+    return grape_variety_obj.variety_id

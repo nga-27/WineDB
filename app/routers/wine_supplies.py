@@ -76,6 +76,19 @@ def update_wine_supply_quantity(quantity_update: WineSupplyQuantityUpdate) -> st
 def create_wine_supply(wine_supply: WineSupplyCreate) -> str:
     if not wine_supply.upc_vintage_sd_id:
         wine_supply.upc_vintage_sd_id = str(uuid.uuid4())
+    
+    wine_supplies: List[WineSupply] = []
+    with Session(get_db_interface().engine) as session:
+        stmt = select(WineSupply)
+        if wine_supply.name:
+            stmt = stmt.where(WineSupply.name == wine_supply.name)
+        if wine_supply.vintage:
+            stmt = stmt.where(WineSupply.vintage == wine_supply.vintage)
+        wine_supplies = session.exec(stmt).all()
+    if len(wine_supplies) > 0:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Supply with name '{wine_supply.name}' and vintage '{wine_supply.vintage}' already exists.")
 
     db_supply = WineSupply(
         upc_vintage_sd_id=wine_supply.upc_vintage_sd_id,

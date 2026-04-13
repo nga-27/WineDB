@@ -31,6 +31,14 @@ def get_countries(name: Union[str, None] = None) -> List[Country]:
 
 @ROUTER.post("/", status_code=201)
 def create_country(country: CreateCountryRequest) -> str:
+    countries: List[Country] = []
+    with Session(get_db_interface().engine) as session:
+        stmt = select(Country)
+        stmt = stmt.where(Country.name == country.name)
+        countries = session.exec(stmt).all()
+    if len(countries) > 0:
+        return countries[0].country_id
+
     country_obj = Country(
         country_id=str(uuid.uuid4()),
         name=country.name,

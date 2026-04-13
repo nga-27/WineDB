@@ -32,6 +32,14 @@ def get_regions(name: str | None = None) -> List[Region]:
 
 @ROUTER.post("/", status_code=201)
 def create_region(region: CreateRegionRequest) -> str:
+    regions: List[Region] = []
+    with Session(get_db_interface().engine) as session:
+        stmt = select(Region)
+        stmt = stmt.where(Region.name == region.name)
+        regions = session.exec(stmt).all()
+    if len(regions) > 0:
+        return regions[0].region_id
+
     region_obj = Region(
         region_id=str(uuid.uuid4()),
         name=region.name,

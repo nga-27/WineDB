@@ -16,6 +16,6 @@ def create_country(name: str, description: str | None) -> Tuple[str, bool]:
         "http://localhost:8282/countries/",
         json={"name": name, "description": description})
     if response.status_code == 201:
-        return response.json()["country_id"], True
+        return response.json(), True
     else:
         return response.text, False

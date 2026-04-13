@@ -71,12 +71,13 @@ def seed_database():
 
     country_ids = map_by_name("countries", id_key="country_id")
     wine_types = [
-        {"name": "Red", "description": "Full-bodied wines from dark grapes."},
-        {"name": "White", "description": "Light wines from green or yellow grapes."},
-        {"name": "Rosé", "description": "Pink wines from red grape skins."},
         {"name": "Sparkling", "description": "Effervescent wines with bubbles."},
+        {"name": "White", "description": "Light wines from green or yellow grapes."},
+        {"name": "Orange", "description": "White wines fermented with skin contact."},
+        {"name": "Rosé", "description": "Pink wines from red grape skins."},
+        {"name": "Red", "description": "Full-bodied wines from dark grapes."},
+        {"name": "Fortified", "description": "Wines with added alcohol, like Port."},
         {"name": "Dessert", "description": "Sweet wines often served with dessert."},
-        {"name": "Fortified", "description": "Wines with added alcohol, like Port."}
     ]
 
     # Seed wine types

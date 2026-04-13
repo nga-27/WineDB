@@ -1,7 +1,7 @@
 from typing import List, Union
 import uuid
 
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from sqlmodel import Session, select
 
@@ -27,6 +27,16 @@ def get_countries(name: Union[str, None] = None) -> List[Country]:
             stmt = stmt.where(Country.name.ilike(f"%{name}%"))
         countries = session.exec(stmt).all()
     return countries
+
+
+@ROUTER.get("/{country_id}", status_code=200)
+def get_country_by_id(country_id: str) -> Union[Country, None]:
+    with Session(get_db_interface().engine) as session:
+        stmt = select(Country).where(Country.country_id == country_id)
+        country = session.exec(stmt).one_or_none()
+    if country is None:
+        raise HTTPException(status_code=404, detail="Country not found")
+    return country
 
 
 @ROUTER.post("/", status_code=201)

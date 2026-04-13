@@ -111,8 +111,10 @@ def create_wine_supply(wine_supply: WineSupplyCreate) -> str:
     )
 
     with Session(get_db_interface().engine) as session:
-        db_supply.grapes = [session.get(GrapeVariety, grape_id) for grape_id in wine_supply.grape_ids if grape_id]
-        db_supply.food_pairings = [session.get(FoodPairing, pairing_id) for pairing_id in wine_supply.food_pairing_ids if pairing_id]
+        db_supply.grapes = [
+            session.get(GrapeVariety, grape_id) for grape_id in wine_supply.grape_ids if grape_id]
+        db_supply.food_pairings = [
+            session.get(FoodPairing, pairing_id) for pairing_id in wine_supply.food_pairing_ids if pairing_id]
 
         session.add(db_supply)
         session.commit()

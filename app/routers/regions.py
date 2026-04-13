@@ -1,7 +1,7 @@
 from typing import List
 import uuid
 
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from sqlmodel import Session, select
 
@@ -28,6 +28,16 @@ def get_regions(name: str | None = None) -> List[Region]:
             stmt = stmt.where(Region.name.ilike(f"%{name}%"))
         regions = session.exec(stmt).all()
     return regions
+
+
+@ROUTER.get("/{region_id}", status_code=200)
+def get_region(region_id: str) -> Region:
+    with Session(get_db_interface().engine) as session:
+        stmt = select(Region).where(Region.region_id == region_id)
+        region = session.exec(stmt).one_or_none()
+    if region is None:
+        raise HTTPException(status_code=404, detail="Region not found")
+    return region
 
 
 @ROUTER.post("/", status_code=201)

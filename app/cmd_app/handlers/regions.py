@@ -3,7 +3,7 @@ from typing import Union, Tuple
 
 from app.cmd_app.api_utils.regions import create_region
 from app.cmd_app.api_utils.countries import search_countries_for_content
-from app.cmd_app.handlers.countries import process_region_creation
+from app.cmd_app.handlers.countries import process_country_creation
 from .generic import process_linking_input
 from .utils import BottleHandler
 
@@ -42,7 +42,7 @@ def create_region_entry(name: str, bottler: BottleHandler) -> Tuple[str, bool]:
     new_region['description'] = bottler.handle_input("Description? ", none_on_skip=True)
     country_name, country_id = process_linking_input(
         bottler, "country", search_countries_for_content)
-    country_id = process_region_creation(country_name, country_id, bottler)
+    country_id = process_country_creation(country_name, country_id, bottler)
     new_region["country_id"] = country_id
 
     new_region_id, was_successful = create_region(

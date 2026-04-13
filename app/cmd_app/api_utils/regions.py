@@ -1,4 +1,4 @@
-from typing import List, Tuple
+from typing import List, Tuple, Union
 
 import requests
 
@@ -19,3 +19,19 @@ def create_region(name: str, country_id: str | None, description: str | None) ->
         return response.json(), True
     else:
         return response.text, False
+
+
+def get_country_from_region(region_id: str) -> Tuple[Union[str, None], Union[str, None]]:
+    """ Gets the country name for a given region ID, or None if there is no linked country """
+    response = requests.get(f"http://localhost:8282/regions/{region_id}")
+    if response.status_code != 200:
+        return None, None
+    region_data = response.json()
+    country_id = region_data.get("country_id")
+    if country_id is None:
+        return None, None
+    country_response = requests.get(f"http://localhost:8282/countries/{country_id}")
+    if country_response.status_code != 200:
+        return None, None
+    country_data = country_response.json()
+    return country_data.get("name"), country_id

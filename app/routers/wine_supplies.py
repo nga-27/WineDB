@@ -20,7 +20,7 @@ class WineSupplyCreate(BaseModel):
     upc_barcode_id: str | None = None
     vintage: str | None = None
     vendor: str | None = None
-    region: str | None = None
+    region_id: str | None = None
     pct_alcohol: str | None = None
     drink_by_date: str | None = None
     tasting_notes: str | None = None
@@ -84,7 +84,7 @@ def create_wine_supply(wine_supply: WineSupplyCreate) -> str:
         upc_barcode_id=wine_supply.upc_barcode_id,
         vintage=wine_supply.vintage,
         vendor=wine_supply.vendor,
-        region=wine_supply.region,
+        region_id=wine_supply.region_id,
         pct_alcohol=wine_supply.pct_alcohol,
         drink_by_date=wine_supply.drink_by_date,
         tasting_notes=wine_supply.tasting_notes,

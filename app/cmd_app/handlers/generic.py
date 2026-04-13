@@ -15,6 +15,7 @@ def process_linking_input(bottler: BottleHandler, model: str,
                     or None if it needs to be created or was skipped
     """
     name = bottler.handle_input(f"Which {model} is it? (hit 'enter' to skip, -s for search) ")
+    search_partial = name.strip() if name is not None else ""
     if name is None or len(name) == 0:
         return None, None
     if "-s" in name:
@@ -32,6 +33,7 @@ def process_linking_input(bottler: BottleHandler, model: str,
             name = search_results[int(generic)-1]
             split_name, split_id = name.split(", id: ")
             return split_name.strip(), split_id.strip()
+        search_partial = generic.strip()
         
     bottler.ui_manager.add_text_content(
         f"\r\nWe'll start a new {model} entry for '{search_partial}'")

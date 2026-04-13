@@ -16,6 +16,6 @@ def create_region(name: str, country_id: str | None, description: str | None) ->
         "http://localhost:8282/regions/",
         json={"name": name, "country_id": country_id, "description": description})
     if response.status_code == 201:
-        return response.json()["region_id"], True
+        return response.json(), True
     else:
         return response.text, False

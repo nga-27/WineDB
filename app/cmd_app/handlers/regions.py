@@ -18,7 +18,7 @@ def process_region_creation(name: Union[str, None], region_id: Union[str, None],
         # Region already exists, we'll do the linkage by returning the existing ID
         return region_id
     # Create new region entry and return new ID
-    new_region_id, was_successful = create_region_entry(name)
+    new_region_id, was_successful = create_region_entry(name, bottler)
     if was_successful:
         return new_region_id
     bottler.ui_manager.add_text_content(

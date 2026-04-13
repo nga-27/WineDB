@@ -30,6 +30,8 @@ def process_name_input(bottler: BottleHandler) -> tuple[str, str | None, bool]:
     vintage = None
     needs_entry = True
     name = bottler.handle_input("What's the name of the wine? (-s for search) ")
+    if name is None:
+        return "", None, False
     if "-s" in name:
         search_partial = name.replace("-s", "").strip()
         search_results = search_supply_for_content(search_partial)

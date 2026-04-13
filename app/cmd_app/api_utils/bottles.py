@@ -4,8 +4,14 @@ from typing import List, Tuple, Union
 import requests
 
 
-def search_supply_for_content(name: str, vintage: str | None = None) -> List[str]:
+def search_supply_for_content(name: str | None = None, vintage: str | None = None) -> List[str]:
     """ Placeholder function to search for content based on user input """
+    if name is None:
+        results = requests.get(f"http://localhost:8282/wine_supplies")
+        result_names = [
+            f'{result["name"]} ({result["vintage"]}) - {result["vendor"]} - QTY: {result["quantity"]}' \
+                for result in results.json()]
+        return result_names
     if vintage:
         results = requests.get(f"http://localhost:8282/wine_supplies?name={name}&vintage={vintage}")
     else:

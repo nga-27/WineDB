@@ -6,6 +6,7 @@ from pydantic import BaseModel
 from sqlmodel import Session, select
 
 from app.db.database import (
+    Keywords,
     get_db_interface,
     WineSupply,
     GrapeVariety,
@@ -33,6 +34,8 @@ class WineSupplyCreate(BaseModel):
     drank_date: str | None = None
     grape_ids: list[str] = []
     food_pairing_ids: list[str] = []
+    keyword_ids: list[str] = []
+
 
 class WineSupplyQuantityUpdate(BaseModel):
     bottle_id: str
@@ -108,6 +111,9 @@ def create_wine_supply(wine_supply: WineSupplyCreate) -> str:
         country_id=wine_supply.country_id,
         drank_event_notes=wine_supply.drank_event_notes,
         drank_date=wine_supply.drank_date,
+        grape_ids=wine_supply.grape_ids,
+        food_pairing_ids=wine_supply.food_pairing_ids,
+        keyword_ids=wine_supply.keyword_ids
     )
 
     with Session(get_db_interface().engine) as session:
@@ -115,6 +121,9 @@ def create_wine_supply(wine_supply: WineSupplyCreate) -> str:
             session.get(GrapeVariety, grape_id) for grape_id in wine_supply.grape_ids if grape_id]
         db_supply.food_pairings = [
             session.get(FoodPairing, pairing_id) for pairing_id in wine_supply.food_pairing_ids if pairing_id]
+        db_supply.keywords = [
+            session.get(Keywords, keyword_id) for keyword_id in wine_supply.keyword_ids if keyword_id
+        ]
 
         session.add(db_supply)
         session.commit()

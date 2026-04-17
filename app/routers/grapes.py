@@ -11,6 +11,7 @@ from app.db.database import get_db_interface, GrapeVariety
 class GrapeVarietyCreate(BaseModel):
     name: str
     description: str | None = None
+    region_id: str | None = None
 
 
 ROUTER = APIRouter(
@@ -43,7 +44,8 @@ def create_grape_variety(grape_variety: GrapeVarietyCreate) -> str:
     grape_variety_obj = GrapeVariety(
         variety_id=str(uuid.uuid4()),
         name=grape_variety.name,
-        description=grape_variety.description
+        description=grape_variety.description,
+        region_id=grape_variety.region_id
     )
     with Session(get_db_interface().engine) as session:
         session.add(grape_variety_obj)

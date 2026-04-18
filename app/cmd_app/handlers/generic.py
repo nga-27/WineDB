@@ -16,14 +16,31 @@ def process_linking_input(bottler: BottleHandler, model: str,
     """
     name = bottler.handle_input(f"Which {model} is it? (hit 'enter' to skip, -s for search) ")
     search_partial = name.strip() if name is not None else ""
-    if name is None or len(name) == 0:
+    if len(search_partial) == 0:
         return None, None
-    if "-s" in name:
-        search_partial = name.replace("-s", "").strip()
+    if search_partial.isdigit() and int(search_partial) >= 1:
+        search_results = search_function("")
+        if int(search_partial) > len(search_results):
+            bottler.ui_manager.add_text_content(
+                f"\r\n\033[31mInvalid selection. Expected a number between 1 and {len(search_results)}.\033[39m")
+            time.sleep(2)
+            return None, None
+        name = search_results[int(search_partial)-1]
+        split_name, split_id = name.split(", id: ")
+        bottler.ui_manager.add_text_content(f"\r\nSelected {model}: {split_name.strip()}")
+        time.sleep(1)
+        return split_name.strip(), split_id.strip()
+    if "-s" in search_partial:
+        search_partial = search_partial.replace("-s", "").strip()
         search_results = search_function(search_partial)
+        if len(search_results) == 0:
+            bottler.ui_manager.add_text_content(f"\r\nNo {model} found matching '{search_partial}'. Resetting.")
+            time.sleep(2)
+            return None, None
         bottler.ui_manager.add_text_content("\r\n")
-        for i, name in enumerate(search_results):
-            bottler.ui_manager.add_text_content(f"\t - [{i+1}] {name}")
+        for i, name_found in enumerate(search_results):
+            actual_name, _ = name_found.split(", id: ")
+            bottler.ui_manager.add_text_content(f"\t - [{i+1}] {actual_name}")
         bottler.ui_manager.add_text_content("\r\n")
         time.sleep(0.5)
 

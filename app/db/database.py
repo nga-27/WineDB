@@ -114,7 +114,6 @@ class DBInterface:
     def create_db_and_tables(self):
         if self.__has_initialized:
             return
-        print("creating DB...")
         SQLModel.metadata.create_all(self.engine)
         self.__has_initialized = True
 

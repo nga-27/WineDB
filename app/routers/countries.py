@@ -1,10 +1,12 @@
 from typing import List, Union
 import uuid
+import logging
 
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from sqlmodel import Session, select
 
+from app.logging_config import LOGGER_NAME
 from app.db.database import get_db_interface, Country
 
 
@@ -54,8 +56,13 @@ def create_country(country: CreateCountryRequest) -> str:
         name=country.name,
         description=country.description
     )
-    with Session(get_db_interface().engine) as session:
-        session.add(country_obj)
-        session.commit()
-        session.refresh(country_obj)
+    try:
+        with Session(get_db_interface().engine) as session:
+            session.add(country_obj)
+            session.commit()
+            session.refresh(country_obj)
+    except Exception as exc:
+        logger = logging.getLogger(LOGGER_NAME)
+        logger.error(f"Error creating country entry: {exc}")
+        raise HTTPException(status_code=500, detail="An error occurred while creating the country entry.")
     return country_obj.country_id

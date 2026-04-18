@@ -11,6 +11,7 @@ from app.cmd_app.main_handler import (
     run, startup, shutdown
 )
 from app.logging_config import LOGGING_CONFIG
+from seeding.auto_seed import auto_seed
 
 BASE_URL = "http://localhost:8282"
 BASE_PORT = 8282
@@ -43,6 +44,9 @@ def run_app():
     t_api.start()
     time.sleep(0.1)
     t_ui.start()
+    time.sleep(1)
+    if not auto_seed():
+        print("\r\n\r\n\r\n\r\n\r\n\033[31mDatabase seed FAILED.\033[39m")
 
     t_ui.join()
     t_api.join()

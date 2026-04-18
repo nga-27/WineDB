@@ -1,16 +1,19 @@
 from typing import List
 import uuid
+import logging
 
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from sqlmodel import Session, select
 
+from app.logging_config import LOGGER_NAME
 from app.db.database import get_db_interface, GrapeVariety
 
 
 class GrapeVarietyCreate(BaseModel):
     name: str
     description: str | None = None
+    region_id: str | None = None
 
 
 ROUTER = APIRouter(
@@ -43,10 +46,16 @@ def create_grape_variety(grape_variety: GrapeVarietyCreate) -> str:
     grape_variety_obj = GrapeVariety(
         variety_id=str(uuid.uuid4()),
         name=grape_variety.name,
-        description=grape_variety.description
+        description=grape_variety.description,
+        region_id=grape_variety.region_id
     )
-    with Session(get_db_interface().engine) as session:
-        session.add(grape_variety_obj)
-        session.commit()
-        session.refresh(grape_variety_obj)
+    try:
+        with Session(get_db_interface().engine) as session:
+            session.add(grape_variety_obj)
+            session.commit()
+            session.refresh(grape_variety_obj)
+    except Exception as exc:
+        logger = logging.getLogger(LOGGER_NAME)
+        logger.error(f"Error creating grape variety entry: {exc}")
+        raise HTTPException(status_code=500, detail="An error occurred while creating the grape variety entry.")
     return grape_variety_obj.variety_id

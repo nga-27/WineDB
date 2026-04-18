@@ -6,11 +6,11 @@ from importlib.metadata import version
 
 from fastapi import FastAPI
 
-from app.logging_config import configure_logging
+from app.logging_config import configure_logging, LOGGER_NAME
 from app.routers import grapes, countries, regions, wine_types, locations, wine_supplies, keywords, food_pairings
 
 configure_logging()
-logger = logging.getLogger("app")
+logger = logging.getLogger(LOGGER_NAME)
 
 async def lifespan(app: FastAPI):
     logger.info("WineDB API startup complete")

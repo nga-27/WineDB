@@ -5,6 +5,8 @@ import time
 import subprocess
 import requests
 
+SEED_SUPPLY = False
+
 # Add the project root to Python path
 project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, project_root)
@@ -98,7 +100,8 @@ def seed_database():
         {"name": "Marlborough", "description": "Premier wine region in New Zealand.", "country_id": country_ids.get("New Zealand")},
         {"name": "Sonoma County", "description": "California wine region in the United States.", "country_id": country_ids.get("United States")},
         {"name": "Barossa Valley", "description": "Wine region in South Australia.", "country_id": country_ids.get("Australia")},
-        {"name": "Douro Valley", "description": "Port wine region in Portugal.", "country_id": country_ids.get("Portugal")}
+        {"name": "Douro Valley", "description": "Port wine region in Portugal.", "country_id": country_ids.get("Portugal")},
+        {"name": "Minnesota", "description": "Wine region in Minnesota.", "country_id": country_ids.get("United States")}
     ]
 
     # Seed regions
@@ -241,11 +244,12 @@ def seed_database():
     ]
 
     # Seed wine supplies
-    for wine_supply in wine_supplies:
-        response = requests.post(f"{base_url}/wine_supplies/", json=wine_supply)
-        print(f"Created wine supply {wine_supply['name']}: {response.status_code}")
-        if response.status_code != 201:
-            print(f"Failed to create wine supply {wine_supply['name']}: {response.text}")
+    if SEED_SUPPLY:
+        for wine_supply in wine_supplies:
+            response = requests.post(f"{base_url}/wine_supplies/", json=wine_supply)
+            print(f"Created wine supply {wine_supply['name']}: {response.status_code}")
+            if response.status_code != 201:
+                print(f"Failed to create wine supply {wine_supply['name']}: {response.text}")
 
     # Shutdown the server
     try:

@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "WineDB"
-version = "0.0.3"
+version = "0.0.4"
 description = 'Database for managing and analyzing wine consumption'
 authors = [
     {name = "Nick Amell", email = "namell91@gmail.com"}
@@ -32,7 +32,7 @@ dependencies = [
     'pydantic==2.12.4',
     'sqlmodel==0.0.27',
     'uvicorn==0.38.0',
-    'terminal_ui_lite @ git+https://github.com/nga-27/terminal-ui-lite.git@v0.3.4'
+    'terminal_ui_lite @ git+https://github.com/nga-27/terminal-ui-lite.git@v0.4.1'
 ]
 
 [project.optional-dependencies]

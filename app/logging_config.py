@@ -1,6 +1,9 @@
 import logging.config
 from pathlib import Path
 
+
+LOGGER_NAME = "wine_db_api"
+
 LOG_DIR = Path(__file__).resolve().parents[1] / "logs"
 LOG_DIR.mkdir(parents=True, exist_ok=True)
 LOG_FILE_PATH = LOG_DIR / "wine_db_api.log"

@@ -1,10 +1,12 @@
 from typing import List
 import uuid
+import logging
 
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from sqlmodel import Session, select
 
+from app.logging_config import LOGGER_NAME
 from app.db.database import get_db_interface, Keywords
 
 
@@ -45,8 +47,13 @@ def create_keyword(keyword: CreateKeywordRequest) -> str:
         keyword=keyword.keyword,
         description=keyword.description
     )
-    with Session(get_db_interface().engine) as session:
-        session.add(keyword_obj)
-        session.commit()
-        session.refresh(keyword_obj)
+    try:
+        with Session(get_db_interface().engine) as session:
+            session.add(keyword_obj)
+            session.commit()
+            session.refresh(keyword_obj)
+    except Exception as exc:
+        logger = logging.getLogger(LOGGER_NAME)
+        logger.error(f"Error creating keyword entry: {exc}")
+        raise HTTPException(status_code=500, detail="An error occurred while creating the keyword entry.")
     return keyword_obj.keyword_id

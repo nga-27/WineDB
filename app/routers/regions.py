@@ -1,10 +1,12 @@
 from typing import List
 import uuid
+import logging
 
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from sqlmodel import Session, select
 
+from app.logging_config import LOGGER_NAME
 from app.db.database import get_db_interface, Region
 
 
@@ -56,8 +58,13 @@ def create_region(region: CreateRegionRequest) -> str:
         country_id=region.country_id,
         description=region.description
     )
-    with Session(get_db_interface().engine) as session:
-        session.add(region_obj)
-        session.commit()
-        session.refresh(region_obj)
+    try:
+        with Session(get_db_interface().engine) as session:
+            session.add(region_obj)
+            session.commit()
+            session.refresh(region_obj)
+    except Exception as exc:
+        logger = logging.getLogger(LOGGER_NAME)
+        logger.error(f"Error creating region entry: {exc}")
+        raise HTTPException(status_code=500, detail="An error occurred while creating the region entry.")
     return region_obj.region_id

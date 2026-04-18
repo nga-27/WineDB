@@ -38,7 +38,7 @@ def process_grape_variety_input(bottler: BottleHandler) -> Tuple[List[str], List
     """ Prompts user for grape variety information and processes it """
     grape_ids: List[str] = []
     grape_names: List[str] = []
-    num_grapes = bottler.handle_input("How many grape varieties are used? ")
+    num_grapes = bottler.handle_input("HOW MANY grape varieties are used? ")
     if num_grapes is None or not num_grapes.isdigit() or int(num_grapes) <= 0:
         return [], []
     for i in range(1, int(num_grapes) + 1):

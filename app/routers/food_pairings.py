@@ -1,10 +1,12 @@
 from typing import List
 import uuid
+import logging
 
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from sqlmodel import Session, select
 
+from app.logging_config import LOGGER_NAME
 from app.db.database import get_db_interface, FoodPairing
 
 
@@ -45,8 +47,13 @@ def create_food_pairing(food_pairing: FoodPairing) -> str:
         name=food_pairing.name,
         description=food_pairing.description
     )
-    with Session(get_db_interface().engine) as session:
-        session.add(food_pairing_obj)
-        session.commit()
-        session.refresh(food_pairing_obj)
+    try:
+        with Session(get_db_interface().engine) as session:
+            session.add(food_pairing_obj)
+            session.commit()
+            session.refresh(food_pairing_obj)
+    except Exception as exc:
+        logger = logging.getLogger(LOGGER_NAME)
+        logger.error(f"Error creating food pairing entry: {exc}")
+        raise HTTPException(status_code=500, detail="An error occurred while creating the food pairing entry.")
     return food_pairing_obj.pairing_id

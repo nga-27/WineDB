@@ -21,7 +21,8 @@ def process_linking_input(bottler: BottleHandler, model: str,
     if search_partial.isdigit() and int(search_partial) >= 1:
         search_results = search_function("")
         if int(search_partial) > len(search_results):
-            bottler.ui_manager.add_text_content(f"\r\nInvalid selection. Expected a number between 1 and {len(search_results)}.")
+            bottler.ui_manager.add_text_content(
+                f"\r\n\033[31mInvalid selection. Expected a number between 1 and {len(search_results)}.\033[39m")
             time.sleep(2)
             return None, None
         name = search_results[int(search_partial)-1]
@@ -38,7 +39,8 @@ def process_linking_input(bottler: BottleHandler, model: str,
             return None, None
         bottler.ui_manager.add_text_content("\r\n")
         for i, name_found in enumerate(search_results):
-            bottler.ui_manager.add_text_content(f"\t - [{i+1}] {name_found}")
+            actual_name, _ = name_found.split(", id: ")
+            bottler.ui_manager.add_text_content(f"\t - [{i+1}] {actual_name}")
         bottler.ui_manager.add_text_content("\r\n")
         time.sleep(0.5)
 

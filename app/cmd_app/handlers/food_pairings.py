@@ -15,16 +15,17 @@ def process_food_pairing_adding_input(bottler: BottleHandler) -> Tuple[List[str]
         bottler.ui_manager.add_text_content("\r\nHere are some food pairings:")
         bottler.ui_manager.add_text_content("\r\n")
         for i, name in enumerate(search_results):
-            bottler.ui_manager.add_text_content(f"\t - [{i+1}] {name}")
+            actual_name, _ = name.split(", id: ")
+            bottler.ui_manager.add_text_content(f"\t - [{i+1}] {actual_name}")
         bottler.ui_manager.add_text_content("\r\n")
         time.sleep(0.5)
     yes_to_add = bottler.handle_input(
-        "Do you want to add any food pairings to this bottle? [Y/n] ")
+        "Do you want to add any food pairings to this bottle? \033[36m[Y/n]\033[39m ")
     if yes_to_add is not None and "n" in yes_to_add.lower():
         return [], []
 
     num_food_pairings = bottler.handle_input(
-        "HOW MANY food pairings do you want to add? ")
+        "\033[36mHOW MANY\033[39m food pairings do you want to add? ")
     if num_food_pairings is None or not num_food_pairings.isdigit() or int(num_food_pairings) <= 0:
         return [], []
     for i in range(1, int(num_food_pairings) + 1):
@@ -65,7 +66,7 @@ def process_food_pairing_input(bottler: BottleHandler, food_pairing_list_id: int
         search_results = search_food_pairings_for_content("")
         if int(search_partial) > len(search_results):
             bottler.ui_manager.add_text_content(
-                f"\r\nInvalid selection. Expected a number between 1 and {len(search_results)}.")
+                f"\r\n\033[31mInvalid selection. Expected a number between 1 and {len(search_results)}.\033[39m")
             time.sleep(2)
             return None, None
         name = search_results[int(search_partial)-1]

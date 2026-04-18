@@ -1,6 +1,7 @@
 """ Handlers for bottle-related actions in the command-line application. """
 import time
 from typing import Tuple
+import uuid
 
 from terminal_ui_lite import TerminalUILite
 
@@ -83,22 +84,25 @@ def process_name_input(bottler: BottleHandler) -> Tuple[str, str | None, bool]:
     return name, vintage, needs_entry
 
 
-def process_vintage_input(bottler: BottleHandler, name: str, vintage: str | None) -> Tuple[str | None, bool]:
+def process_vintage_input(bottler: BottleHandler, name: str, vintage: str | None) -> Tuple[str | None, bool, str | None]:
     """ Prompts user for vintage and processes it, including searching and supply increase options
     
     Returns:
         vintage (str or None): The vintage (year) of the wine, or None if not provided or invalid
         needs_entry (bool): Whether we need to continue to create a new supply entry
+        modified name (str or None): The modified name if the user selected an existing supply with
+            a different vintage, or None if not modified
     """
+    alt_name = None
     if vintage is None:
         vintage = bottler.handle_input("\r\nWhat's the vintage (year)? ")
         if vintage is None or len(vintage.strip()) == 0:
-            return None, True
+            return None, True, None
         if vintage is not None and len(vintage.strip()) > 0 and not vintage.strip().isdigit():
             bottler.ui_manager.add_text_content(
                 f"\r\n\033[31mInvalid vintage (year). Resetting.\033[39m")
             time.sleep(2)
-            return None, False
+            return None, False, None
 
         # This should be a valid vintage. Check if it already exists
         if vintage is not None:
@@ -106,7 +110,7 @@ def process_vintage_input(bottler: BottleHandler, name: str, vintage: str | None
             for supply in existing_supplies:
                 if supply.endswith(f"({vintage})"):
                     vintage_response = bottler.handle_input(
-                        f"\r\nA supply with the same name and vintage already exists. Should we add another bottle to the supply? [Y/n] ")
+                        f"\r\nA supply with the same name and vintage \033[33m({vintage})already exists\033[39m. Should we add another bottle to the supply? \033[36m[Y/n]\033[39m ")
                     if vintage_response is not None and \
                         (len(vintage_response) == 0 or vintage_response.lower() in ["y", "yes"]):
                         was_successful, error_message = increase_bottle_supply(name, vintage)
@@ -116,8 +120,14 @@ def process_vintage_input(bottler: BottleHandler, name: str, vintage: str | None
                             bottler.ui_manager.add_text_content(f"\r\n\033[31mSorry, something went wrong adding another bottle of {name} ({vintage}) to the supply.\033[39m")
                             bottler.ui_manager.add_text_content(f"\r\nError: {error_message}\r\n")
                         time.sleep(2)
-                        return None, False
-    return vintage, True
+                        return None, False, None
+                    else:
+                        bottler.ui_manager.add_text_content(
+                            f"\r\nWe'll start a new bottle entry for '{name} ({vintage})'")
+                        time.sleep(2)
+                        uuid_str = str(uuid.uuid4())[:8]
+                        alt_name = f"{name} -- {uuid_str}"
+    return vintage, True, alt_name
 
 
 def process_bottle_input_data(ui_manager: TerminalUILite) -> None:
@@ -134,9 +144,11 @@ def process_bottle_input_data(ui_manager: TerminalUILite) -> None:
     bottler.ui_manager.clear_content()
     time.sleep(0.5)
 
-    vintage, needs_entry = process_vintage_input(bottler, name, vintage)
+    vintage, needs_entry, alt_name = process_vintage_input(bottler, name, vintage)
     if not needs_entry:
         return
+    if alt_name is not None:
+        name = alt_name
     bottler.ui_manager.clear_content()
     time.sleep(0.5)        
 

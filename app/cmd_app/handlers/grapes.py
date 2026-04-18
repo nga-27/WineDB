@@ -38,7 +38,7 @@ def process_grape_variety_input(bottler: BottleHandler) -> Tuple[List[str], List
     """ Prompts user for grape variety information and processes it """
     grape_ids: List[str] = []
     grape_names: List[str] = []
-    num_grapes = bottler.handle_input("HOW MANY grape varieties are used? ")
+    num_grapes = bottler.handle_input("\033[36mHOW MANY\033[39m grape varieties are used? ")
     if num_grapes is None or not num_grapes.isdigit() or int(num_grapes) <= 0:
         return [], []
     for i in range(1, int(num_grapes) + 1):
@@ -80,7 +80,7 @@ def process_grape_input(bottler: BottleHandler, grape_id: int) -> Tuple[Union[st
         search_results = search_wine_grapes_for_content("")
         if int(search_partial) > len(search_results):
             bottler.ui_manager.add_text_content(
-                f"\r\nInvalid selection. Expected a number between 1 and {len(search_results)}.")
+                f"\r\n\033[31mInvalid selection. Expected a number between 1 and {len(search_results)}.\033[39m")
             time.sleep(2)
             return None, None
         name = search_results[int(search_partial)-1]
@@ -93,7 +93,8 @@ def process_grape_input(bottler: BottleHandler, grape_id: int) -> Tuple[Union[st
         search_results = search_wine_grapes_for_content(search_partial)
         bottler.ui_manager.add_text_content("\r\n")
         for i, name_found in enumerate(search_results):
-            bottler.ui_manager.add_text_content(f"\t - [{i+1}] {name_found}")
+            actual_name, _ = name_found.split(", id: ")
+            bottler.ui_manager.add_text_content(f"\t - [{i+1}] {actual_name}")
         bottler.ui_manager.add_text_content("\r\n")
         time.sleep(0.5)
 

@@ -15,15 +15,16 @@ def process_keyword_adding_input(bottler: BottleHandler) -> Tuple[List[str], Lis
         bottler.ui_manager.add_text_content("\r\nHere are some keywords:")
         bottler.ui_manager.add_text_content("\r\n")
         for i, name in enumerate(search_results):
-            bottler.ui_manager.add_text_content(f"\t - [{i+1}] {name}")
+            actual_name, _ = name.split(", id: ")
+            bottler.ui_manager.add_text_content(f"\t - [{i+1}] {actual_name}")
         bottler.ui_manager.add_text_content("\r\n")
         time.sleep(0.5)
     yes_to_add = bottler.handle_input(
-        "Do you want to add any keywords or generic tasting notes to this bottle? [Y/n] ")
+        "Do you want to add any keywords or generic tasting notes to this bottle? \033[36m[Y/n]\033[39m ")
     if yes_to_add is not None and "n" in yes_to_add.lower():
         return [], []
     num_keywords = bottler.handle_input(
-        "HOW MANY keywords / generic tasting notes do you want to add? ")
+        "\033[36mHOW MANY\033[39m keywords / generic tasting notes do you want to add? ")
     if num_keywords is None or not num_keywords.isdigit() or int(num_keywords) <= 0:
         return [], []
     for i in range(1, int(num_keywords) + 1):
@@ -64,7 +65,7 @@ def process_keyword_input(bottler: BottleHandler, keyword_list_id: int) -> Tuple
         search_results = search_keywords_for_content("")
         if int(search_partial) > len(search_results):
             bottler.ui_manager.add_text_content(
-                f"\r\nInvalid selection. Expected a number between 1 and {len(search_results)}.")
+                f"\r\n\033[31mInvalid selection. Expected a number between 1 and {len(search_results)}.\033[39m")
             time.sleep(2)
             return None, None
         name = search_results[int(search_partial)-1]
@@ -77,7 +78,8 @@ def process_keyword_input(bottler: BottleHandler, keyword_list_id: int) -> Tuple
         search_results = search_keywords_for_content(search_partial)
         bottler.ui_manager.add_text_content("\r\n")
         for i, name_found in enumerate(search_results):
-            bottler.ui_manager.add_text_content(f"\t - [{i+1}] {name_found}")
+            actual_name, _ = name_found.split(", id: ")
+            bottler.ui_manager.add_text_content(f"\t - [{i+1}] {actual_name}")
         bottler.ui_manager.add_text_content("\r\n")
         time.sleep(0.5)
 

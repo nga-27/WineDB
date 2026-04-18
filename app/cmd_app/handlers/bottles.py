@@ -10,6 +10,7 @@ from app.cmd_app.api_utils.regions import search_regions_for_content, get_countr
 from app.cmd_app.api_utils.wine_types import search_wine_types_for_content
 from app.cmd_app.api_utils.countries import search_countries_for_content
 from app.cmd_app.api_utils.locations import search_wine_locations_for_content
+from .keywords import process_keyword_adding_input
 from .generic import process_linking_input
 from .regions import process_region_creation
 from .countries import process_country_creation
@@ -126,9 +127,14 @@ def process_bottle_input_data(ui_manager: TerminalUILite) -> None:
     bottler.ui_manager.clear_content()
     time.sleep(0.5)
 
+    keyword_names, keyword_ids = process_keyword_adding_input(bottler)
+    bottler.ui_manager.clear_content()
+    time.sleep(0.5)
+
+    tasting_notes = bottler.handle_input("\r\nAny additional / specific tasting notes? (hit 'enter' to skip) ", none_on_skip=True)
     pct_alcohol = bottler.handle_input("\r\nWhat's the percentage of alcohol? (hit 'enter' to skip) ", none_on_skip=True)
     drink_by_date = bottler.handle_input("\r\nWhat's the drink-by date? (hit 'enter' to skip) ", none_on_skip=True)
-    tasting_notes = bottler.handle_input("\r\nAny tasting notes? (hit 'enter' to skip) ", none_on_skip=True)
+
     obtainment_note = bottler.handle_input("\r\nAny obtainment notes? (hit 'enter' to skip) ", none_on_skip=True)
     other_notes = bottler.handle_input("\r\nAny other notes? (hit 'enter' to skip) ", none_on_skip=True)
 
@@ -145,6 +151,7 @@ def process_bottle_input_data(ui_manager: TerminalUILite) -> None:
     ui_manager.add_text_content(f"\tWinery: {winery}")
     ui_manager.add_text_content(f"\tWine Type: {type_name}")
     ui_manager.add_text_content(f"\tGrapes: {', '.join(grape_names)}")
+    ui_manager.add_text_content(f"\tKeywords: {', '.join(keyword_names)}")
     ui_manager.add_text_content(f"\tQuantity: {quantity}")
     ui_manager.add_text_content(f"\tRegion: {region_name}")
     ui_manager.add_text_content(f"\tCountry: {country_name}")
@@ -175,6 +182,7 @@ def process_bottle_input_data(ui_manager: TerminalUILite) -> None:
             country_id=country_id,
             physical_location_id=location_id,
             grape_ids=grape_ids,
+            keyword_ids=keyword_ids,
         )
         if create_bottle_entry_response[0]:
             ui_manager.add_text_content(f"\r\n\033[32mSuccess! Added {name} ({vintage}) to the supply!\033[39m")

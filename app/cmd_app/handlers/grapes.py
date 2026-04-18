@@ -13,7 +13,23 @@ from .utils import BottleHandler
 
 def grape_handler(ui_manager: TerminalUILite) -> bool:
     """ Handles adding grape varieties """
-    ui_manager.add_text_content("\r\nAdding grape varieties... (not yet implemented)")
+    ui_manager.add_text_content("\r\nAdding grape varieties...")
+    time.sleep(1)
+    bottler = BottleHandler(ui_manager)
+    grape_name, grape_id = process_grape_input(bottler, 0)
+    if grape_name is None:
+        ui_manager.add_text_content("\r\nNo grape variety added.")
+        time.sleep(1)
+        return True
+    if grape_id is None:
+        grape_id, was_successful = create_wine_grape_entry(grape_name, bottler)
+    if was_successful:
+        ui_manager.add_text_content(
+            f"\r\n\033[32mSuccessfully added grape variety '{grape_name}' with ID {grape_id}!\033[39m")
+    else:
+        ui_manager.add_text_content(
+            f"\r\n\033[31mSorry, something went wrong adding the grape variety of {grape_name}.\033[39m")
+        ui_manager.add_text_content(f"\r\nError: {grape_id}\r\n")
     time.sleep(2)
     return True
 
@@ -55,12 +71,25 @@ def process_grape_input(bottler: BottleHandler, grape_id: int) -> Tuple[Union[st
         id (str or None): The ID of the linked model if it already exists,
                     or None if it needs to be created or was skipped
     """
-    name = bottler.handle_input(f"\r\nName of grape variety #{grape_id} (-s to search): ")
+    grape_num = f" #{grape_id}" if grape_id > 1 else ""
+    name = bottler.handle_input(f"\r\nName of grape variety{grape_num} (-s to search): ")
     search_partial = name.strip() if name is not None else ""
-    if name is None or len(name) == 0:
+    if len(search_partial) == 0:
         return None, None
-    if "-s" in name:
-        search_partial = name.replace("-s", "").strip()
+    if search_partial.isdigit() and int(search_partial) >= 1:
+        search_results = search_wine_grapes_for_content("")
+        if int(search_partial) > len(search_results):
+            bottler.ui_manager.add_text_content(
+                f"\r\nInvalid selection. Expected a number between 1 and {len(search_results)}.")
+            time.sleep(2)
+            return None, None
+        name = search_results[int(search_partial)-1]
+        split_name, split_id = name.split(", id: ")
+        bottler.ui_manager.add_text_content(f"\r\nSelected grape: {split_name.strip()}")
+        time.sleep(1)
+        return split_name.strip(), split_id.strip()
+    if "-s" in search_partial:
+        search_partial = search_partial.replace("-s", "").strip()
         search_results = search_wine_grapes_for_content(search_partial)
         bottler.ui_manager.add_text_content("\r\n")
         for i, name_found in enumerate(search_results):

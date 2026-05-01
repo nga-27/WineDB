@@ -4,18 +4,20 @@ from typing import Dict, List
 from app.db.database import WineSupply
 
 
-def generate_by_type_tab(wine_supplies: List[WineSupply]):
+def generate_by_type_tab(wine_supplies: List[WineSupply]) -> List[dict]:
     """ Generate the 'By Type' tab of the spreadsheet """
     # Create a mapping of wine types to wines
     type_map: Dict[str, List[WineSupply]] = {}
     for wine in wine_supplies:
+        if wine.physical_location and wine.physical_location.name == "Consumed":
+            continue  # Skip consumed wines
         type_name = wine.wine_type.name if wine.wine_type else "Unknown"
         if type_name not in type_map:
             type_map[type_name] = []
         type_map[type_name].append(wine)
 
     # Create tab data structure
-    tab_data = []
+    tab_data: List[dict] = []
     for type_name, wines in type_map.items():
         for wine in wines:
             tab_data.append({

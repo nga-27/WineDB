@@ -1,17 +1,23 @@
 """ Tab to organize wines by grape variety """
+from typing import Dict, List
 
-def generate_by_grape_variety_tab(wine_supplies):
+from app.db.database import WineSupply
+
+
+def generate_by_grape_variety_tab(wine_supplies: List[WineSupply]) -> List[dict]:
     """ Generate the 'By Grape Variety' tab of the spreadsheet """
     # Create a mapping of grape varieties to wines
-    variety_map = {}
+    variety_map: Dict[str, List[WineSupply]] = {}
     for wine in wine_supplies:
-        for variety in wine.grape_varieties:
+        if wine.physical_location and wine.physical_location.name == "Consumed":
+            continue  # Skip consumed wines
+        for variety in wine.grapes:
             if variety.name not in variety_map:
                 variety_map[variety.name] = []
             variety_map[variety.name].append(wine)
 
     # Create tab data structure
-    tab_data = []
+    tab_data: List[dict] = []
     for variety_name, wines in variety_map.items():
         for wine in wines:
             tab_data.append({

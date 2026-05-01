@@ -5,6 +5,7 @@ import logging
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from sqlmodel import Session, select
+from sqlalchemy.orm import selectinload
 
 from app.logging_config import LOGGER_NAME
 from app.db.database import (
@@ -13,6 +14,10 @@ from app.db.database import (
     WineSupply,
     GrapeVariety,
     FoodPairing,
+    WineType,
+    Region,
+    Country,
+    PhysicalLocation,
 )
 
 
@@ -61,6 +66,52 @@ def get_wine_supplies(name: str | None = None, vintage: str | None = None) -> Li
             stmt = stmt.where(WineSupply.vintage == vintage)
         wine_supplies = session.exec(stmt).all()
     return wine_supplies
+
+
+@ROUTER.get("/joined", status_code=200)
+def get_wine_supplies_joined() -> List[dict]:
+    """Get all wine supplies with all relationships eagerly loaded."""
+    with Session(get_db_interface().engine) as session:
+        stmt = (
+            select(WineSupply)
+            .options(
+                selectinload(WineSupply.wine_type),
+                selectinload(WineSupply.region),
+                selectinload(WineSupply.country),
+                selectinload(WineSupply.physical_location),
+                selectinload(WineSupply.grapes),
+                selectinload(WineSupply.food_pairings),
+                selectinload(WineSupply.keywords),
+            )
+        )
+        wines = session.exec(stmt).all()
+
+    # Build response with only name fields from relationships
+    result = []
+    for wine in wines:
+        result.append({
+            "upc_vintage_sd_id": wine.upc_vintage_sd_id,
+            "name": wine.name,
+            "quantity": wine.quantity,
+            "upc_barcode_id": wine.upc_barcode_id,
+            "vintage": wine.vintage,
+            "vendor": wine.vendor,
+            "pct_alcohol": wine.pct_alcohol,
+            "drink_by_date": wine.drink_by_date,
+            "tasting_notes": wine.tasting_notes,
+            "obtainment_note": wine.obtainment_note,
+            "other_notes": wine.other_notes,
+            "drank_event_notes": wine.drank_event_notes,
+            "drank_date": wine.drank_date,
+            "wine_type": wine.wine_type.name if wine.wine_type else None,
+            "region": wine.region.name if wine.region else None,
+            "country": wine.country.name if wine.country else None,
+            "physical_location": wine.physical_location.name if wine.physical_location else None,
+            "grapes": [g.name for g in wine.grapes] if wine.grapes else [],
+            "food_pairings": [fp.name for fp in wine.food_pairings] if wine.food_pairings else [],
+            "keywords": [k.keyword for k in wine.keywords] if wine.keywords else [],
+        })
+    return result
 
 
 @ROUTER.patch("/quantity", status_code=200)

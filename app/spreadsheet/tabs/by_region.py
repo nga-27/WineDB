@@ -1,9 +1,13 @@
 """ Tab to organize wines by region """
+from typing import List, Dict
 
-def generate_by_region_tab(wine_supplies):
+from app.db.database import WineSupply
+
+
+def generate_by_region_tab(wine_supplies: List[WineSupply]) -> List[dict]:
     """ Generate the 'By Region' tab of the spreadsheet """
     # Create a mapping of regions to wines
-    region_map = {}
+    region_map: Dict[str, List[WineSupply]] = {}
     for wine in wine_supplies:
         region_name = wine.region.name if wine.region else "Unknown"
         if region_name not in region_map:
@@ -11,7 +15,7 @@ def generate_by_region_tab(wine_supplies):
         region_map[region_name].append(wine)
 
     # Create tab data structure
-    tab_data = []
+    tab_data: List[dict] = []
     for region_name, wines in region_map.items():
         for wine in wines:
             tab_data.append({

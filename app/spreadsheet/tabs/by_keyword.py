@@ -1,17 +1,22 @@
 """ Tab to organize wines by keywords """
 
-def generate_by_keyword_tab(wine_supplies):
+from typing import List, Dict
+
+from app.db.database import WineSupply
+
+
+def generate_by_keyword_tab(wine_supplies: List[WineSupply]) -> List[dict]:
     """ Generate the 'By Keyword' tab of the spreadsheet """
     # Create a mapping of keywords to wines
-    keyword_map = {}
+    keyword_map: Dict[str, List[WineSupply]] = {}
     for wine in wine_supplies:
         for keyword in wine.keywords:
-            if keyword.name not in keyword_map:
-                keyword_map[keyword.name] = []
-            keyword_map[keyword.name].append(wine)
+            if keyword.keyword not in keyword_map:
+                keyword_map[keyword.keyword] = []
+            keyword_map[keyword.keyword].append(wine)
 
     # Create tab data structure
-    tab_data = []
+    tab_data: List[dict] = []
     for keyword_name, wines in keyword_map.items():
         for wine in wines:
             tab_data.append({

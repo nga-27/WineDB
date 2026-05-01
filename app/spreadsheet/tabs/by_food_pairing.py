@@ -1,9 +1,13 @@
 """ Tab to organize wines by food pairing """
+from typing import Dict, List
 
-def generate_by_food_pairing_tab(wine_supplies):
+from app.db.database import WineSupply
+
+
+def generate_by_food_pairing_tab(wine_supplies: List[WineSupply]) -> List[dict]:
     """ Generate the 'By Food Pairing' tab of the spreadsheet """
     # Create a mapping of food pairings to wines
-    pairing_map = {}
+    pairing_map: Dict[str, List[WineSupply]] = {}
     for wine in wine_supplies:
         for pairing in wine.food_pairings:
             if pairing.name not in pairing_map:

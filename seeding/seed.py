@@ -5,7 +5,7 @@ import time
 import subprocess
 import requests
 
-SEED_SUPPLY = False
+SEED_SUPPLY = True
 
 # Add the project root to Python path
 project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -69,6 +69,8 @@ def seed_database():
     def map_by_name(endpoint, id_key="location_id"):
         response = requests.get(f"{base_url}/{endpoint}/")
         response.raise_for_status()
+        if id_key == "keyword_id":
+            return {item["keyword"]: item[id_key] for item in response.json()}
         return {item["name"]: item[id_key] for item in response.json()}
 
     country_ids = map_by_name("countries", id_key="country_id")
@@ -168,6 +170,9 @@ def seed_database():
         response = requests.post(f"{base_url}/keywords/", json=keyword)
         print(f"Created keyword {keyword['keyword']}: {response.status_code}")
 
+    # Fetch keyword IDs for relationships
+    keyword_ids_map = map_by_name("keywords", id_key="keyword_id")
+
     # Sample data for food pairings
     food_pairings = [
         {"name": "Red Meat", "description": "Steak, lamb, beef dishes."},
@@ -205,7 +210,8 @@ def seed_database():
             "wine_type_id": wine_type_ids.get("Red"),
             "country_id": country_ids.get("France"),
             "grape_ids": [grape_ids["Cabernet Sauvignon"], grape_ids["Merlot"]],
-            "food_pairing_ids": [pairing_ids["Red Meat"], pairing_ids["Cheese"]]
+            "food_pairing_ids": [pairing_ids["Red Meat"], pairing_ids["Cheese"]],
+            "keyword_ids": [keyword_ids_map["Bold"], keyword_ids_map["Tannic"], keyword_ids_map["Oaky"]]
         },
         {
             "name": "Cloudy Bay Sauvignon Blanc",
@@ -222,7 +228,8 @@ def seed_database():
             "wine_type_id": wine_type_ids.get("White"),
             "country_id": country_ids.get("New Zealand"),
             "grape_ids": [grape_ids["Sauvignon Blanc"]],
-            "food_pairing_ids": [pairing_ids["Fish"], pairing_ids["Poultry"]]
+            "food_pairing_ids": [pairing_ids["Fish"], pairing_ids["Poultry"]],
+            "keyword_ids": [keyword_ids_map["Crisp"], keyword_ids_map["Light"], keyword_ids_map["Fruity"]]
         },
         {
             "name": "Ridge Lytton Springs",
@@ -239,7 +246,8 @@ def seed_database():
             "wine_type_id": wine_type_ids.get("Red"),
             "country_id": country_ids.get("United States"),
             "grape_ids": [grape_ids["Syrah"]],
-            "food_pairing_ids": [pairing_ids["Spicy Food"], pairing_ids["Red Meat"]]
+            "food_pairing_ids": [pairing_ids["Spicy Food"], pairing_ids["Red Meat"]],
+            "keyword_ids": [keyword_ids_map["Bold"], keyword_ids_map["Earthy"], keyword_ids_map["Fruity"]]
         }
     ]
 

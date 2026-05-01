@@ -9,6 +9,8 @@ def generate_by_type_tab(wine_supplies: List[WineSupply]) -> List[dict]:
     # Create a mapping of wine types to wines
     type_map: Dict[str, List[WineSupply]] = {}
     for wine in wine_supplies:
+        if wine.physical_location and wine.physical_location.name == "Consumed":
+            continue  # Skip consumed wines
         type_name = wine.wine_type.name if wine.wine_type else "Unknown"
         if type_name not in type_map:
             type_map[type_name] = []

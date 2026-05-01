@@ -9,6 +9,8 @@ def generate_by_region_tab(wine_supplies: List[WineSupply]) -> List[dict]:
     # Create a mapping of regions to wines
     region_map: Dict[str, List[WineSupply]] = {}
     for wine in wine_supplies:
+        if wine.physical_location and wine.physical_location.name == "Consumed":
+            continue  # Skip consumed wines
         region_name = wine.region.name if wine.region else "Unknown"
         if region_name not in region_map:
             region_map[region_name] = []

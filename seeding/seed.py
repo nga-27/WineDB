@@ -248,6 +248,24 @@ def seed_database():
             "grape_ids": [grape_ids["Syrah"]],
             "food_pairing_ids": [pairing_ids["Spicy Food"], pairing_ids["Red Meat"]],
             "keyword_ids": [keyword_ids_map["Bold"], keyword_ids_map["Earthy"], keyword_ids_map["Fruity"]]
+        },
+        {
+            "name": "Ridge Lytton Springs - Old Vintage",
+            "quantity": 2,
+            "vintage": "2018",
+            "vendor": "Direct from winery",
+            "region_id": region_ids.get("Sonoma County"),
+            "pct_alcohol": "14.7%",
+            "drink_by_date": "2030-11-01",
+            "tasting_notes": "Dark berries, pepper, balanced acidity.",
+            "obtainment_note": "Ordered online.",
+            "other_notes": "Great with grilled meats.",
+            "physical_location_id": location_ids.get("Consumed"),
+            "wine_type_id": wine_type_ids.get("Red"),
+            "country_id": country_ids.get("United States"),
+            "grape_ids": [grape_ids["Syrah"]],
+            "food_pairing_ids": [pairing_ids["Spicy Food"], pairing_ids["Red Meat"]],
+            "keyword_ids": [keyword_ids_map["Bold"], keyword_ids_map["Earthy"], keyword_ids_map["Fruity"]]
         }
     ]
 

@@ -15,6 +15,8 @@ def generate_by_drink_by_date_tab(wine_supplies: List[WineSupply]) -> List[dict]
     # Create tab data structure
     tab_data = []
     for wine in sorted_wines:
+        if wine.physical_location and wine.physical_location.name == "Consumed":
+            continue  # Skip consumed wines
         tab_data.append({
             "Name": wine.name,
             "Drink By Date": wine.drink_by_date,

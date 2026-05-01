@@ -9,6 +9,8 @@ def generate_by_grape_variety_tab(wine_supplies: List[WineSupply]) -> List[dict]
     # Create a mapping of grape varieties to wines
     variety_map: Dict[str, List[WineSupply]] = {}
     for wine in wine_supplies:
+        if wine.physical_location and wine.physical_location.name == "Consumed":
+            continue  # Skip consumed wines
         for variety in wine.grapes:
             if variety.name not in variety_map:
                 variety_map[variety.name] = []

@@ -10,6 +10,8 @@ def generate_by_keyword_tab(wine_supplies: List[WineSupply]) -> List[dict]:
     # Create a mapping of keywords to wines
     keyword_map: Dict[str, List[WineSupply]] = {}
     for wine in wine_supplies:
+        if wine.physical_location and wine.physical_location.name == "Consumed":
+            continue  # Skip consumed wines
         for keyword in wine.keywords:
             if keyword.keyword not in keyword_map:
                 keyword_map[keyword.keyword] = []
@@ -31,12 +33,23 @@ def generate_by_keyword_tab(wine_supplies: List[WineSupply]) -> List[dict]:
     return tab_data
 
 
-def generate_keyword_summary(wine_supplies):
+def generate_keyword_summary(wine_supplies: List[WineSupply]) -> List[dict]:
     """ Generate a summary of keyword usage across wines """
     summary = {}
     for wine in wine_supplies:
+        if wine.physical_location and wine.physical_location.name == "Consumed":
+            continue  # Skip consumed wines
         for keyword in wine.keywords:
-            if keyword.name not in summary:
-                summary[keyword.name] = 0
-            summary[keyword.name] += 1
-    return summary
+            if keyword.keyword not in summary:
+                summary[keyword.keyword] = 0
+            summary[keyword.keyword] += 1
+    
+    # Create tab data structure
+    tab_data: List[dict] = []
+    for keyword_name, count in summary.items():
+        tab_data.append({
+            "Keyword": keyword_name,
+            "Count": count
+        })
+
+    return tab_data

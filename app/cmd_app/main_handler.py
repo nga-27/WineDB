@@ -6,7 +6,9 @@ from terminal_ui_lite import TerminalUILite
 
 from app.cmd_app.utils.api import handle_get_payload
 from app.cmd_app.utils.constants import PrintColor
-from app.cmd_app.handlers import bottle_handler, grape_handler, view_handler, sync_handler
+from app.cmd_app.handlers import (
+    bottle_handler, grape_handler, view_handler, sync_handler, consume_handler
+)
 
 
 DEFAULT_CALLBACK_DATA = "ASDFAKSDLJ;FASDFLKJHASDLFKjBNALSKJDfH"
@@ -25,6 +27,8 @@ OPTION_STATES = {
     "exit": "exit",
     "s": "sync",
     "sync": "sync",
+    "c": "consume", 
+    "consume": "consume",
 }
 
 def exit_handler(ui_manager: TerminalUILite) -> bool:
@@ -37,6 +41,7 @@ def exit_handler(ui_manager: TerminalUILite) -> bool:
 
 ACTION_FUNCTIONS = {
     "bottle": bottle_handler,
+    "consume": consume_handler,
     "grape": grape_handler,
     "sync": sync_handler,
     "view": view_handler,
@@ -57,8 +62,9 @@ def what_to_do_options(ui_manager: TerminalUILite) -> str:
         time.sleep(0.5)
         ui_manager.add_text_content("What would you like to do? Options include:\r\n\r\n")
 
-        ui_manager.add_text_content(f"\t- Add {PrintColor.GREEN}GRAPE VARIETIES{PrintColor.NORMAL} (g or grape)")
         ui_manager.add_text_content(f"\t- Add {PrintColor.MAGENTA}BOTTLES{PrintColor.NORMAL} (b or bottle)")
+        ui_manager.add_text_content(f"\t- Add {PrintColor.RED}CONSUME{PrintColor.NORMAL} a bottle (c or consume)")
+        ui_manager.add_text_content(f"\t- Add {PrintColor.GREEN}GRAPE VARIETIES{PrintColor.NORMAL} (g or grape)")
         ui_manager.add_text_content(f"\t- {PrintColor.BLUE}SYNC{PrintColor.NORMAL} with spreadsheet (s or sync)")
         ui_manager.add_text_content(f"\t- {PrintColor.CYAN}VIEW WINE SUPPLY{PrintColor.NORMAL} (v or view)")
         ui_manager.add_text_content(f"\t- {PrintColor.YELLOW}EXIT{PrintColor.NORMAL} (e or exit, q or quit)")

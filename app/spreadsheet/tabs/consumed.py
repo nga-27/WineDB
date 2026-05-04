@@ -11,7 +11,6 @@ def generate_consumed_tab(supply_wines: List[WineSupply]) -> List[dict]:
         if wine.physical_location and wine.physical_location.name == "Consumed":
             tab_data.append({
                 "Name": wine.name,
-                "Quantity": wine.quantity,
                 "Grapes": ", ".join([grape.name for grape in wine.grapes]) if wine.grapes else "Unknown",
                 "Vintage": wine.vintage,
                 "Type": wine.wine_type.name if wine.wine_type else "Unknown",

@@ -130,5 +130,5 @@ def sync_handler(ui_manager: TerminalUILite) -> bool:
             ui_manager.add_text_content(f"\033[32m'{tab_name}' tab generated with {len(tab_data)} records.\033[39m")
     
     ui_manager.add_text_content(f"Spreadsheet exported to: {output_path}")
-    time.sleep(10)
+    time.sleep(5)
     return True

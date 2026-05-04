@@ -6,6 +6,7 @@ import logging
 
 import pandas as pd
 import requests
+from openpyxl.styles import Font
 from terminal_ui_lite import TerminalUILite
 
 from app.logging_config import LOGGER_NAME
@@ -93,13 +94,40 @@ def sync_handler(ui_manager: TerminalUILite) -> bool:
                     ui_manager.add_text_content(f"\033[31mError generating '{tab_name}' tab. See logs for details.\033[39m")
                     time.sleep(2)
                     continue
-                
-                # Sanitize sheet name (Excel limit: 31 chars, no special chars)
-                safe_sheet_name = tab_name[:31].replace("/", "-").replace("\\", "-")
-                df.to_excel(writer, sheet_name=safe_sheet_name, index=False)
-                ui_manager.add_text_content(f"\033[32m'{tab_name}' tab generated with {len(tab_data)} records.\033[39m")
             else:
                 ui_manager.add_text_content(f"\033[33mTab '{tab_name}' returned no data.\033[39m")
+            
+            # Sanitize sheet name (Excel limit: 31 chars, no special chars)
+            safe_sheet_name = tab_name[:31].replace("/", "-").replace("\\", "-")
+            df.to_excel(writer, sheet_name=safe_sheet_name, index=False)
+            
+            # Apply bold formatting to header-like rows
+            workbook = writer.book
+            sheet = workbook[safe_sheet_name]
+            
+            # Get column names
+            columns = list(df.columns)
+            
+            for row_idx in range(2, sheet.max_row + 1):  # Start from row 2 (after header)
+                name_cell = sheet.cell(row=row_idx, column=1)  # Assuming "Name" is first column
+                if name_cell.value and all(
+                    sheet.cell(row=row_idx, column=col_idx + 1).value in [None, ''] 
+                    for col_idx in range(1, len(columns))
+                ):
+                    # This is a header row (Name has value, others are empty)
+                    name_cell.font = Font(bold=True)
+            
+            # Adjust column widths based on max content length
+            for col_idx, column in enumerate(columns, start=1):
+                max_length = len(str(column))  # Start with column header length
+                for row_idx in range(2, sheet.max_row + 1):
+                    cell_value = sheet.cell(row=row_idx, column=col_idx).value
+                    if cell_value:
+                        max_length = max(max_length, len(str(cell_value)))
+                # Set column width with 2-char padding for readability
+                sheet.column_dimensions[sheet.cell(row=1, column=col_idx).column_letter].width = max_length + 2
+            
+            ui_manager.add_text_content(f"\033[32m'{tab_name}' tab generated with {len(tab_data)} records.\033[39m")
     
     ui_manager.add_text_content(f"Spreadsheet exported to: {output_path}")
     time.sleep(10)

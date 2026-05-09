@@ -1,5 +1,13 @@
 """ Generate the SQLite table """
+import json
+import os
+
 from sqlmodel import create_engine, SQLModel, Field, Relationship
+
+
+SETTINGS_FILE_PATH = os.path.join(
+    os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "settings.json"
+)
 
 
 # Association table for many-to-many relationship
@@ -110,6 +118,10 @@ class DBInterface:
         self.sql_url = f"sqlite:///{self.sql_file_name}"
         self.engine = create_engine(self.sql_url)
         # self.engine = create_engine(self.sql_url, echo=True)
+        if not os.path.exists(SETTINGS_FILE_PATH):
+            # Create the file to be filled out
+            with open(SETTINGS_FILE_PATH, "w", encoding='utf-8') as file_x:
+                json.dump({"sync_path": ""}, file_x)
 
     def create_db_and_tables(self):
         if self.__has_initialized:

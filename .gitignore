@@ -140,6 +140,7 @@ internal/
 # App-based
 wineDB.db
 logs/
+settings.json
 
 # Office-related temp files
 ~$*

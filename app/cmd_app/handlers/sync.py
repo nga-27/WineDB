@@ -3,6 +3,8 @@ from datetime import datetime
 from typing import List
 import time
 import logging
+import json
+import shutil
 
 import pandas as pd
 import requests
@@ -21,6 +23,7 @@ from app.db.database import (
     Keywords,
 )
 from app.spreadsheet.generator import TAB_MAP
+from app.db.database import SETTINGS_FILE_PATH
 
 
 def sync_handler(ui_manager: TerminalUILite) -> bool:
@@ -75,7 +78,8 @@ def sync_handler(ui_manager: TerminalUILite) -> bool:
     
     # Generate output filename with timestamp
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    output_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__)))), "output")
+    output_dir = os.path.join(
+        os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__)))), "output")
     os.makedirs(output_dir, exist_ok=True)
     output_path = os.path.join(output_dir, f"WineDB_Export_{timestamp}.xlsx")
     
@@ -130,5 +134,24 @@ def sync_handler(ui_manager: TerminalUILite) -> bool:
             ui_manager.add_text_content(f"\033[32m'{tab_name}' tab generated with {len(tab_data)} records.\033[39m")
     
     ui_manager.add_text_content(f"Spreadsheet exported to: {output_path}")
+    if not os.path.exists(SETTINGS_FILE_PATH):
+        logger.warning(f"Settings file not found at {SETTINGS_FILE_PATH}. Skipping drive sync.")
+        ui_manager.add_text_content("\033[33mSettings file not found. Skipping drive sync.\033[39m")
+    else:
+        settings = {}
+        try:
+            with open(SETTINGS_FILE_PATH, "r") as file_x:
+                settings = json.load(file_x)
+            sync_path = settings.get("sync_path")
+            if not sync_path or len(sync_path) == 0:
+                logger.warning("Sync path not found or not filled in in settings. Skipping drive sync.")
+                ui_manager.add_text_content("\033[33mSync path not found in settings. Skipping drive sync.\033[39m")
+            else:
+                shutil.copy(output_path, sync_path)
+                ui_manager.add_text_content(f"\033[32mSpreadsheet synced to drive location: {sync_path}\033[39m")
+        except Exception as exc:
+            logger.error(f"Error loading settings from {SETTINGS_FILE_PATH}: {exc}")
+            ui_manager.add_text_content("\033[31mError loading settings. See logs for details.\033[39m")
+
     time.sleep(5)
     return True

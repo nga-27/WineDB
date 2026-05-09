@@ -196,3 +196,14 @@ def create_wine_supply(wine_supply: WineSupplyCreate) -> str:
         raise HTTPException(status_code=500, detail=f"Error creating wine supply: {exc}")
 
     return "OK"
+
+
+@ROUTER.delete("/{bottle_id}", status_code=200)
+def delete_wine_supply(bottle_id: str) -> str:
+    with Session(get_db_interface().engine) as session:
+        supply = session.get(WineSupply, bottle_id)
+        if not supply:
+            raise HTTPException(status_code=404, detail=f"No supply found with id {bottle_id}")
+        session.delete(supply)
+        session.commit()
+    return "OK"

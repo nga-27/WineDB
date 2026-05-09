@@ -19,9 +19,10 @@ def generate_by_type_tab(wine_supplies: List[WineSupply]) -> List[dict]:
     # Create tab data structure
     tab_data: List[dict] = []
     for type_name, wines in type_map.items():
+        tab_data.append({"Name": " "})  # Add a separator row
+        tab_data.append({"Name": type_name})  # Add a header row for the type
         for wine in wines:
             tab_data.append({
-                "Type": type_name,
                 "Name": wine.name,
                 "Grapes": ", ".join([grape.name for grape in wine.grapes]) if wine.grapes else "Unknown",
                 "Vintage": wine.vintage,
@@ -31,10 +32,11 @@ def generate_by_type_tab(wine_supplies: List[WineSupply]) -> List[dict]:
                 "Quantity": wine.quantity if wine.quantity else "Unknown",
                 "Obtainment Note": wine.obtainment_note if wine.obtainment_note else "None",
                 "Location": wine.physical_location.name if wine.physical_location else "Unknown",
+                "Drink By Date": wine.drink_by_date if wine.drink_by_date else "Unknown",
+                "Keywords": ", ".join([keyword.keyword for keyword in wine.keywords]) if wine.keywords else "n/a",
                 "Tasting Notes": wine.tasting_notes if wine.tasting_notes else "None",
                 "Food Pairings": ", ".join([pairing.name for pairing in wine.food_pairings]) \
                     if wine.food_pairings else "n/a",
-                "Drink By Date": wine.drink_by_date if wine.drink_by_date else "Unknown",
             })
 
     return tab_data

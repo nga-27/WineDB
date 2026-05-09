@@ -3,9 +3,12 @@ from typing import List, Tuple
 import requests
 
 
-def search_wine_locations_for_content(name: str) -> List[str]:
+def search_wine_locations_for_content(name: str | None = None) -> List[str]:
     """ Placeholder function to search for content based on user input """
-    results = requests.get(f"http://localhost:8282/locations?name={name}")
+    if name is None:
+        results = requests.get(f"http://localhost:8282/locations")
+    else:
+        results = requests.get(f"http://localhost:8282/locations?name={name}")
     result_names = [f'{result["name"]}, id: {result["location_id"]}' for result in results.json()]
     return result_names
 

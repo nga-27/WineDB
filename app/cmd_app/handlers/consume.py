@@ -63,7 +63,7 @@ def process_name_input(bottler: BottleHandler) -> Tuple[str, str | None, bool]:
     name = bottler.handle_input("What's the name of the wine? (-s for search) ")
     if name is None or len(name.strip()) == 0:
         return "", None, False
-    if len(name.strip()) == 13 and name.strip().isdigit():
+    if len(name.strip()) in (12, 13) and name.strip().isdigit():
         barcode_response = bottler.handle_input(f"\r\nIs '{name}' a UPC barcode? [Y/n] ")
         if barcode_response is not None and (len(barcode_response) == 0 or barcode_response.lower() in ["y", "yes"]):
             name = name.strip()

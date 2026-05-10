@@ -114,10 +114,20 @@ def decrease_bottle_supply(
     # Add a consumed version when we don't have one already
     if len(consumed_stock) == 0:
         to_consume = in_stock[0].copy()
+        # Many-to-many relationships
         grape_response = requests.get(
             f"http://localhost:8282/grape_varieties?upc_vintage_sd_id={to_consume['upc_vintage_sd_id']}")
         if grape_response.status_code == 200:
             to_consume["grape_ids"] = [grape["variety_id"] for grape in grape_response.json()]
+        food_pairing_response = requests.get(
+            f"http://localhost:8282/food_pairings?upc_vintage_sd_id={to_consume['upc_vintage_sd_id']}")
+        if food_pairing_response.status_code == 200:
+            to_consume["food_pairing_ids"] = [pairing["pairing_id"] for pairing in food_pairing_response.json()]
+        keyword_response = requests.get(
+            f"http://localhost:8282/keywords?upc_vintage_sd_id={to_consume['upc_vintage_sd_id']}")
+        if keyword_response.status_code == 200:
+            to_consume["keyword_ids"] = [keyword["keyword_id"] for keyword in keyword_response.json()]
+
         to_consume["physical_location_id"] = consumed_id
         to_consume["quantity"] = 1
         to_consume["upc_vintage_sd_id"] = None  # Ensure a new entry is created

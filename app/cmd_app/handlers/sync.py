@@ -163,9 +163,11 @@ def sync_handler(ui_manager: TerminalUILite) -> bool:
             else:
                 shutil.copy(output_path, sync_path)
                 db_output_path = os.path.join(os.path.dirname(os.path.dirname(output_path)), "wineDB.db")
-                db_sync_path = os.path.join(os.path.dirname(output_path), "wineDB.db")
+                db_sync_path = os.path.join(os.path.dirname(sync_path), "wineDB.db")
+                ui_manager.add_text_content("Copying database file to sync location...")
                 shutil.copy(db_output_path, db_sync_path)
                 ui_manager.add_text_content(f"\033[32mSpreadsheet synced to drive location: {sync_path}\033[39m")
+                ui_manager.add_text_content(f"\033[32mDatabase file synced to drive location: {db_sync_path}\033[39m")
         except Exception as exc:
             logger.error(f"Error loading settings from {SETTINGS_FILE_PATH}: {exc}")
             ui_manager.add_text_content("\033[31mError loading settings. See logs for details.\033[39m")

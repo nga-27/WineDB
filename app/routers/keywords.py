@@ -7,7 +7,7 @@ from pydantic import BaseModel
 from sqlmodel import Session, select
 
 from app.logging_config import LOGGER_NAME
-from app.db.database import get_db_interface, Keywords
+from app.db.database import get_db_interface, Keywords, SupplyKeywordsLink
 
 
 class CreateKeywordRequest(BaseModel):
@@ -22,12 +22,15 @@ ROUTER = APIRouter(
 
 
 @ROUTER.get("/", status_code=200)
-def get_keywords(name: str | None = None) -> List[Keywords]:
+def get_keywords(name: str | None = None, upc_vintage_sd_id: str | None = None) -> List[Keywords]:
     keywords: List[Keywords] = []
     with Session(get_db_interface().engine) as session:
         stmt = select(Keywords)
         if name:
             stmt = stmt.where(Keywords.name.ilike(f"%{name}%"))
+        if upc_vintage_sd_id:
+            stmt = stmt.join(SupplyKeywordsLink, Keywords.keyword_id == SupplyKeywordsLink.keyword_id)
+            stmt = stmt.where(SupplyKeywordsLink.supply_id == upc_vintage_sd_id)
         keywords = session.exec(stmt).all()
     return keywords
 

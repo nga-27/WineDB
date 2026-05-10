@@ -44,6 +44,14 @@ def sync_handler(ui_manager: TerminalUILite) -> bool:
     wines_data: List[dict] = requests.get("http://localhost:8282/wine_supplies/joined").json()
     logger.info(f"Retrieved {len(wines_data)} wine records from API.")
     logger.info("Wines: %s", wines_data)
+    grapes_data: List[dict] = requests.get("http://localhost:8282/grape_varieties").json()
+    logger.info(f"Retrieved {len(grapes_data)} grape variety records from API.")
+    logger.info("Grapes: %s", grapes_data)
+    grapes = [GrapeVariety.model_validate(g) for g in grapes_data]
+    regions_data: List[dict] = requests.get("http://localhost:8282/regions").json()
+    logger.info(f"Retrieved {len(regions_data)} region records from API.")
+    logger.info("Regions: %s", regions_data)
+    regions = [Region.model_validate(r) for r in regions_data]
     
     wines: List[WineSupply] = []
     for wine_data in wines_data:
@@ -64,11 +72,9 @@ def sync_handler(ui_manager: TerminalUILite) -> bool:
             wine.food_pairings = [FoodPairing(name=fp) for fp in wine_data["food_pairings"]]
         if wine_data.get("keywords"):
             wine.keywords = [Keywords(keyword=k) for k in wine_data["keywords"]]
-        
         wines.append(wine)
     
     logger.info("Wines after conversion: %s", wines)
-    
     if not wines or len(wines) == 0:
         ui_manager.add_text_content("\033[31mNo wines found in database to export.\033[39m")
         time.sleep(2)
@@ -87,7 +93,12 @@ def sync_handler(ui_manager: TerminalUILite) -> bool:
     with pd.ExcelWriter(output_path, engine="openpyxl") as writer:
         for tab_name, tab_generator in TAB_MAP.items():
             ui_manager.add_text_content(f"Generating '{tab_name}' tab...")
-            tab_data = tab_generator(wines)
+            if tab_name == "Grape Varieties":
+                tab_data = tab_generator(wines, grapes)
+            elif tab_name == "Regions":
+                tab_data = tab_generator(wines, regions)
+            else:
+                tab_data = tab_generator(wines)
             
             if tab_data:
                 logger.info("Tab data for '%s': %s", tab_name, tab_data)
@@ -116,10 +127,13 @@ def sync_handler(ui_manager: TerminalUILite) -> bool:
                 name_cell = sheet.cell(row=row_idx, column=1)  # Assuming "Name" is first column
                 if name_cell.value and all(
                     sheet.cell(row=row_idx, column=col_idx + 1).value in [None, ''] 
-                    for col_idx in range(1, len(columns))
+                    for col_idx in range(2, len(columns))
                 ):
                     # This is a header row (Name has value, others are empty)
                     name_cell.font = Font(bold=True)
+                    second_cell = sheet.cell(row=row_idx, column=2)
+                    if second_cell.value:
+                        second_cell.font = Font(italic=True)
             
             # Adjust column widths based on max content length
             for col_idx, column in enumerate(columns, start=1):

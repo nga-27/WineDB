@@ -1,10 +1,11 @@
 """ Tab to organize wines by grape variety """
 from typing import Dict, List
 
-from app.db.database import WineSupply
+from app.db.database import WineSupply, GrapeVariety
 
 
-def generate_by_grape_variety_tab(wine_supplies: List[WineSupply]) -> List[dict]:
+def generate_by_grape_variety_tab(wine_supplies: List[WineSupply],
+                                  grapes: List[GrapeVariety]) -> List[dict]:
     """ Generate the 'By Grape Variety' tab of the spreadsheet """
     # Create a mapping of grape varieties to wines
     variety_map: Dict[str, List[WineSupply]] = {}
@@ -13,15 +14,17 @@ def generate_by_grape_variety_tab(wine_supplies: List[WineSupply]) -> List[dict]
             continue  # Skip consumed wines
         for variety in wine.grapes:
             if variety.name not in variety_map:
-                variety_map[variety.name] = []
-            variety_map[variety.name].append(wine)
+                grape = next((g for g in grapes if g.name == variety.name), None)
+                description = grape.description if grape else "No description available."
+                variety_map[variety.name] = {"wines": [], "description": description}
+            variety_map[variety.name]["wines"].append(wine)
 
     # Create tab data structure
     tab_data: List[dict] = []
-    for variety_name, wines in variety_map.items():
+    for variety_name, obj_data in variety_map.items():
         tab_data.append({"Name": " "})  # Add a separator row
-        tab_data.append({"Name": variety_name})  # Add a header row for the grape variety
-        for wine in wines:
+        tab_data.append({"Name": variety_name, "Type": obj_data["description"]})  # Add a header row for the grape variety
+        for wine in obj_data["wines"]:
             tab_data.append({
                 "Name": wine.name,
                 "Type": wine.wine_type.name if wine.wine_type else "Unknown",

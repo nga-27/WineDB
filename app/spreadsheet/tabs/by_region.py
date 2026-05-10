@@ -1,10 +1,11 @@
 """ Tab to organize wines by region """
 from typing import List, Dict
 
-from app.db.database import WineSupply
+from app.db.database import WineSupply, Region
 
 
-def generate_by_region_tab(wine_supplies: List[WineSupply]) -> List[dict]:
+def generate_by_region_tab(wine_supplies: List[WineSupply],
+                           regions: List[Region]) -> List[dict]:
     """ Generate the 'By Region' tab of the spreadsheet """
     # Create a mapping of regions to wines
     region_map: Dict[str, List[WineSupply]] = {}
@@ -13,15 +14,19 @@ def generate_by_region_tab(wine_supplies: List[WineSupply]) -> List[dict]:
             continue  # Skip consumed wines
         region_name = wine.region.name if wine.region else "Unknown"
         if region_name not in region_map:
-            region_map[region_name] = []
-        region_map[region_name].append(wine)
+            region = next((r for r in regions if r.name == region_name), None)
+            description = region.description if region else "No description available."
+            region_map[region_name] = {
+                "wines": [],
+                "description": description}
+        region_map[region_name]["wines"].append(wine)
 
     # Create tab data structure
     tab_data: List[dict] = []
-    for region_name, wines in region_map.items():
+    for region_name, region_data in region_map.items():
         tab_data.append({"Name": " "})  # Add a separator row
-        tab_data.append({"Name": region_name})  # Add a header row for the region
-        for wine in wines:
+        tab_data.append({"Name": region_name, "Type": region_data["description"]})  # Add a header row for the region
+        for wine in region_data["wines"]:
             tab_data.append({
                 "Name": wine.name,
                 "Type": wine.wine_type.name if wine.wine_type else "Unknown",

@@ -1,5 +1,6 @@
 import time
-from typing import Tuple
+from typing import Tuple, Union
+import datetime
 
 from terminal_ui_lite import TerminalUILite
 
@@ -89,7 +90,9 @@ def process_name_input(bottler: BottleHandler) -> Tuple[str, str | None, bool]:
                     vintage_response = bottler.handle_input("Should we consume this bottle from the supply? [Y/n] ")
                     if vintage_response is not None and \
                         (len(vintage_response) == 0 or vintage_response.lower() in ["y", "yes"]):
-                        was_successful, error_message = decrease_bottle_supply(name, vintage)
+                        rating, rating_notes, drank_date, drank_date_event = process_consumed_evaluation(bottler)
+                        was_successful, error_message = decrease_bottle_supply(
+                            name, vintage, rating, rating_notes, drank_date, drank_date_event)
                         if was_successful:
                             bottler.ui_manager.add_text_content(f"\r\n\033[32mConsumed a bottle of {name} ({vintage}) from the supply!\033[39m")
                             needs_entry = False
@@ -130,7 +133,9 @@ def process_name_input(bottler: BottleHandler) -> Tuple[str, str | None, bool]:
                 vintage_response = bottler.handle_input("Should we consume this bottle from the supply? [Y/n] ")
                 if vintage_response is not None and \
                     (len(vintage_response) == 0 or vintage_response.lower() in ["y", "yes"]):
-                    was_successful, error_message = decrease_bottle_supply(name, vintage)
+                    rating, rating_notes, drank_date, drank_date_event = process_consumed_evaluation(bottler)
+                    was_successful, error_message = decrease_bottle_supply(
+                        name, vintage, rating, rating_notes, drank_date, drank_date_event)
                     if was_successful:
                         bottler.ui_manager.add_text_content(f"\r\n\033[32mConsumed a bottle of {name} ({vintage}) from the supply!\033[39m")
                         needs_entry = False
@@ -144,3 +149,32 @@ def process_name_input(bottler: BottleHandler) -> Tuple[str, str | None, bool]:
             name = name_and_vintage
             time.sleep(2)
     return name, vintage, needs_entry
+
+
+def process_consumed_evaluation(
+        bottler: BottleHandler) -> Tuple[Union[str, None], Union[str, None], str, Union[str, None]]:
+    """ Prompts user for evaluation of consumed bottle and processes it """
+    rating = None
+    rating_notes = None
+    drank_date = datetime.datetime.today().strftime('%Y-%m-%d')
+    drank_date_event = None
+    rating_input = bottler.handle_input("\r\nHow would you rate this wine on a scale of 0.0-5.0? ")
+    if rating_input is not None and rating_input.replace('.', '').isdigit() and 0.0 <= float(rating_input) <= 5.0:
+        rating = float(rating_input)
+        rating = str(rating)  # Convert to string for database storage
+    rating_notes_input = bottler.handle_input("\r\nAny rating/tasting notes you'd like to add? ")
+    if rating_notes_input is not None:
+        rating_notes = rating_notes_input
+    drank_date_input = bottler.handle_input("\r\nWhen did you drink this? (YYYY-MM-DD, default to today) ")
+    if drank_date_input is not None and len(drank_date_input.strip()) > 0:
+        try:
+            datetime.datetime.strptime(drank_date_input.strip(), '%Y-%m-%d')
+            drank_date = drank_date_input.strip()
+        except ValueError:
+            bottler.ui_manager.add_text_content("\r\n\033[33mInvalid date format. Defaulting to today's date.\033[39m")
+            time.sleep(2)
+    drank_date_event_input = bottler.handle_input(
+        "\r\nDid you drink this for a special event or occasion? If so, please briefly describe. ")
+    if drank_date_event_input is not None:
+        drank_date_event = drank_date_event_input
+    return rating, rating_notes, drank_date, drank_date_event

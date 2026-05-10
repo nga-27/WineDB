@@ -162,10 +162,13 @@ def sync_handler(ui_manager: TerminalUILite) -> bool:
                 ui_manager.add_text_content("\033[33mSync path not found in settings. Skipping drive sync.\033[39m")
             else:
                 shutil.copy(output_path, sync_path)
+                db_output_path = os.path.join(os.path.dirname(os.path.dirname(output_path)), "wineDB.db")
+                db_sync_path = os.path.join(os.path.dirname(output_path), "wineDB.db")
+                shutil.copy(db_output_path, db_sync_path)
                 ui_manager.add_text_content(f"\033[32mSpreadsheet synced to drive location: {sync_path}\033[39m")
         except Exception as exc:
             logger.error(f"Error loading settings from {SETTINGS_FILE_PATH}: {exc}")
             ui_manager.add_text_content("\033[31mError loading settings. See logs for details.\033[39m")
 
-    time.sleep(5)
+    time.sleep(3)
     return True

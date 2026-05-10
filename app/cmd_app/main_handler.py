@@ -33,7 +33,6 @@ OPTION_STATES = {
 
 def exit_handler(ui_manager: TerminalUILite) -> bool:
     """ Handles exiting the program """
-    # print(f"\r\nWe'll start to {PrintColor.YELLOW}EXIT{PrintColor.NORMAL}...")
     ui_manager.add_text_content("\r\nExiting...")
     time.sleep(1)
     return False
@@ -145,7 +144,7 @@ def close_out_sync(pwd: str) -> bool:
     return True
 
 
-def startup(base_url: str, ui_manager: TerminalUILite) -> None:
+def startup(base_url: str, _: TerminalUILite) -> None:
     """startup
 
     Boots up the api and DB portion, and continues to try hitting the API until it is ready
@@ -163,7 +162,7 @@ def startup(base_url: str, ui_manager: TerminalUILite) -> None:
         time.sleep(1)
 
 
-def shutdown(base_url: str, ui_manager: TerminalUILite) -> None:
+def shutdown(base_url: str, _: TerminalUILite) -> None:
     """shutdown
 
     Shuts down the api (which saves the local DB to the xlsx db file)

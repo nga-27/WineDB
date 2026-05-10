@@ -83,6 +83,9 @@ class WineSupply(SQLModel, table=True):
     country: Country | None = Relationship(back_populates="wines")
     drank_event_notes: str | None = None
     drank_date: str | None = None
+    drank_rating: str | None = None
+    drank_rating_notes: str | None = None
+    drank_rating_raw: str | None = None
     keywords: list["Keywords"] = Relationship(back_populates="wines", link_model=SupplyKeywordsLink)
     food_pairings: list["FoodPairing"] = Relationship(back_populates="wines", link_model=SupplyFoodPairingLink)
     grapes: list["GrapeVariety"] = Relationship(back_populates="wines", link_model=SupplyGrapeLink)

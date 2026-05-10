@@ -14,8 +14,10 @@ def generate_consumed_tab(supply_wines: List[WineSupply]) -> List[dict]:
                 "Grapes": ", ".join([grape.name for grape in wine.grapes]) if wine.grapes else "Unknown",
                 "Vintage": wine.vintage,
                 "Type": wine.wine_type.name if wine.wine_type else "Unknown",
+                "Rating": wine.drank_rating if wine.drank_rating else "n/a",
+                "Rating Notes": wine.drank_rating_notes if wine.drank_rating_notes else "n/a",
                 "Consumed Date": wine.drank_date if wine.drank_date else "Unknown",
-                "Consumed Note": wine.drank_event_notes if wine.drank_event_notes else "N/A",
+                "Consumed Note": wine.drank_event_notes if wine.drank_event_notes else "n/a",
                 "Region": wine.region.name if wine.region else "Unknown",
                 "Country": wine.country.name if wine.country else "Unknown",
                 "PCT": wine.pct_alcohol if wine.pct_alcohol else "Unknown",
@@ -29,4 +31,5 @@ def generate_consumed_tab(supply_wines: List[WineSupply]) -> List[dict]:
                     if wine.food_pairings else "n/a",
             })
 
+    tab_data.sort(key=lambda x: x["Rating"] if x["Rating"] != "n/a" else "0.0", reverse=True)
     return tab_data

@@ -7,7 +7,7 @@ from pydantic import BaseModel
 from sqlmodel import Session, select
 
 from app.logging_config import LOGGER_NAME
-from app.db.database import get_db_interface, GrapeVariety
+from app.db.database import get_db_interface, GrapeVariety, SupplyGrapeLink
 
 
 class GrapeVarietyCreate(BaseModel):
@@ -23,12 +23,15 @@ ROUTER = APIRouter(
 
 
 @ROUTER.get("/", status_code=200)
-def get_grape_varieties(name: str | None = None) -> List[GrapeVariety]:
+def get_grape_varieties(name: str | None = None, upc_vintage_sd_id: str | None = None) -> List[GrapeVariety]:
     grape_varieties: List[GrapeVariety] = []
     with Session(get_db_interface().engine) as session:
         stmt = select(GrapeVariety)
         if name:
             stmt = stmt.where(GrapeVariety.name.ilike(f"%{name}%"))
+        if upc_vintage_sd_id:
+            stmt = stmt.join(SupplyGrapeLink, GrapeVariety.variety_id == SupplyGrapeLink.variety_id)
+            stmt = stmt.where(SupplyGrapeLink.supply_id == upc_vintage_sd_id)
         grape_varieties = session.exec(stmt).all()
     return grape_varieties
 

@@ -37,8 +37,12 @@ class WineSupplyCreate(BaseModel):
     physical_location_id: str | None = None
     wine_type_id: str | None = None
     country_id: str | None = None
+    # Additional consumption fields
     drank_event_notes: str | None = None
     drank_date: str | None = None
+    drank_rating: str | None = None
+    drank_rating_notes: str | None = None
+    drank_rating_raw: str | None = None
     grape_ids: list[str] = []
     food_pairing_ids: list[str] = []
     keyword_ids: list[str] = []
@@ -47,6 +51,11 @@ class WineSupplyCreate(BaseModel):
 class WineSupplyQuantityUpdate(BaseModel):
     bottle_id: str
     new_quantity: int
+    drank_event_notes: str | None = None
+    drank_date: str | None = None
+    drank_rating: str | None = None
+    drank_rating_notes: str | None = None
+    drank_rating_raw: str | None = None
 
 
 ROUTER = APIRouter(
@@ -111,6 +120,8 @@ def get_wine_supplies_joined() -> List[dict]:
             "region": wine.region.name if wine.region else None,
             "country": wine.country.name if wine.country else None,
             "physical_location": wine.physical_location.name if wine.physical_location else None,
+            "drank_rating": wine.drank_rating if wine.drank_rating else None,
+            "drank_rating_notes": wine.drank_rating_notes if wine.drank_rating_notes else None,
             "grapes": [g.name for g in wine.grapes] if wine.grapes else [],
             "food_pairings": [fp.name for fp in wine.food_pairings] if wine.food_pairings else [],
             "keywords": [k.keyword for k in wine.keywords] if wine.keywords else [],
@@ -122,11 +133,21 @@ def get_wine_supplies_joined() -> List[dict]:
 def update_wine_supply_quantity(quantity_update: WineSupplyQuantityUpdate) -> str:
     bottle_id = quantity_update.bottle_id
     new_quantity = quantity_update.new_quantity
+    new_rating = quantity_update.drank_rating
+    new_rating_notes = quantity_update.drank_rating_notes
+    new_rating_raw = quantity_update.drank_rating_raw
+    new_event_notes = quantity_update.drank_event_notes
+    new_drank_date = quantity_update.drank_date
     with Session(get_db_interface().engine) as session:
         supply = session.get(WineSupply, bottle_id)
         if not supply:
             raise HTTPException(status_code=404, detail=f"No supply found with id {bottle_id}")
         supply.quantity = new_quantity
+        supply.drank_rating = new_rating
+        supply.drank_rating_notes = new_rating_notes
+        supply.drank_rating_raw = new_rating_raw
+        supply.drank_event_notes = new_event_notes
+        supply.drank_date = new_drank_date
         session.add(supply)
         session.commit()
     return "OK"
@@ -158,7 +179,7 @@ def create_wine_supply(wine_supply: WineSupplyCreate) -> str:
             status_code=400,
             detail=f"Supply with name '{wine_supply.name}', vintage '{wine_supply.vintage}', " + \
                 f"and physical location '{wine_supply.physical_location_id}' already exists.")
-
+    logger.info(f"Wine grapes: {wine_supply.grape_ids}")
     try:
         db_supply = WineSupply(
             upc_vintage_sd_id=wine_supply.upc_vintage_sd_id,
@@ -178,6 +199,9 @@ def create_wine_supply(wine_supply: WineSupplyCreate) -> str:
             country_id=wine_supply.country_id,
             drank_event_notes=wine_supply.drank_event_notes,
             drank_date=wine_supply.drank_date,
+            drank_rating=wine_supply.drank_rating,
+            drank_rating_notes=wine_supply.drank_rating_notes,
+            drank_rating_raw=wine_supply.drank_rating_raw
         )
         logger.info(f"Created WineSupply object: {db_supply.__dict__}")
     except Exception as exc:

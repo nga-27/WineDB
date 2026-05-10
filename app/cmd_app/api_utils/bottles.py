@@ -55,7 +55,40 @@ def increase_bottle_supply(name: str, vintage: str) -> Tuple[bool, Union[None, s
     return response.status_code == 200, response.text
 
 
-def decrease_bottle_supply(name: str, vintage: str) -> Tuple[bool, Union[None, str]]:
+def handle_ratings_averaging(
+        consumed_obj: dict, new_rating: Union[str, None]
+        ) -> Tuple[Union[str, None], Union[str, None]]:
+    """ Handle averaging of ratings when consuming a bottle that has already been consumed before """
+    if new_rating is None:
+        return consumed_obj["drank_rating"], consumed_obj["drank_rating_raw"]
+    if consumed_obj["drank_rating"] is None:
+        return new_rating, new_rating
+    try:
+        old_ratings = [float(r.strip()) for r in consumed_obj["drank_rating"].split(",") if len(r.strip()) > 0]
+        new_rating_float = float(new_rating)
+        all_ratings = old_ratings + [new_rating_float]
+        averaged_rating = sum(all_ratings) / len(all_ratings)
+        return f"{averaged_rating:.1f}", ','.join(f"{r:.1f}" for r in all_ratings)
+    except ValueError:
+        return new_rating, new_rating  # If ratings aren't valid floats, just use the new rating
+
+
+def handle_notes_appending(
+        consumed_obj: dict, new_notes: Union[str, None], note_type: str
+        ) -> Union[str, None]:
+    """ Handle appending of notes when consuming a bottle that has already been consumed before """
+    if new_notes is None:
+        return consumed_obj[note_type]
+    if consumed_obj[note_type] is None:
+        return new_notes
+    return consumed_obj[note_type] + "; " + new_notes
+
+
+def decrease_bottle_supply(
+        name: str, vintage: str, ratings: Union[str, None] = None,
+        rating_notes: Union[str, None] = None, drank_date: Union[str, None] = None,
+        drank_event_notes: Union[str, None] = None
+        ) -> Tuple[bool, Union[None, str]]:
     """ Placeholder function to decrease bottle supply based on user input """
     if vintage:
         results = requests.get(f"http://localhost:8282/wine_supplies?name={name}&vintage={vintage}")
@@ -81,9 +114,19 @@ def decrease_bottle_supply(name: str, vintage: str) -> Tuple[bool, Union[None, s
     # Add a consumed version when we don't have one already
     if len(consumed_stock) == 0:
         to_consume = in_stock[0].copy()
+        grape_response = requests.get(
+            f"http://localhost:8282/grape_varieties?upc_vintage_sd_id={to_consume['upc_vintage_sd_id']}")
+        if grape_response.status_code == 200:
+            to_consume["grape_ids"] = [grape["variety_id"] for grape in grape_response.json()]
         to_consume["physical_location_id"] = consumed_id
         to_consume["quantity"] = 1
         to_consume["upc_vintage_sd_id"] = None  # Ensure a new entry is created
+        ratings, ratings_raw = handle_ratings_averaging(to_consume, ratings)
+        to_consume["drank_rating"] = ratings
+        to_consume["drank_rating_raw"] = ratings_raw
+        to_consume["drank_rating_notes"] = rating_notes
+        to_consume["drank_date"] = drank_date
+        to_consume["drank_event_notes"] = drank_event_notes
         response = requests.post(f"http://localhost:8282/wine_supplies", json=to_consume)
         if response.status_code != 201:
             return False, f"Failed to create consumed supply for {name} ({vintage}): {response.text}"
@@ -123,11 +166,26 @@ def decrease_bottle_supply(name: str, vintage: str) -> Tuple[bool, Union[None, s
             })
         if response.status_code != 200:
             return False, f"Failed to update supply quantity for {name} ({vintage}): {response.text}"
+    
+    ratings, ratings_raw = handle_ratings_averaging(consumed, ratings)
+    consumed["drank_rating"] = ratings
+    consumed["drank_rating_raw"] = ratings_raw
+    consumed["drank_rating_notes"] = handle_notes_appending(
+        consumed, rating_notes, "drank_rating_notes")
+    consumed["drank_date"] = handle_notes_appending(
+        consumed, drank_date, "drank_date")
+    consumed["drank_event_notes"] = handle_notes_appending(
+        consumed, drank_event_notes, "drank_event_notes")
     response = requests.patch(
         f"http://localhost:8282/wine_supplies/quantity",
         json={
             "bottle_id": consumed["upc_vintage_sd_id"],
-            "new_quantity": consumed["quantity"]
+            "new_quantity": consumed["quantity"],
+            "drank_rating": consumed["drank_rating"],
+            "drank_rating_raw": consumed["drank_rating_raw"],
+            "drank_rating_notes": consumed["drank_rating_notes"],
+            "drank_event_notes": consumed["drank_event_notes"],
+            "drank_date": consumed["drank_date"],
         })
     if response.status_code != 200:
         return False, f"Failed to update consumed supply quantity for {name} ({vintage}): {response.text}"

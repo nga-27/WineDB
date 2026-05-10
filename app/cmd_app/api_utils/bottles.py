@@ -135,7 +135,7 @@ def decrease_bottle_supply(name: str, vintage: str) -> Tuple[bool, Union[None, s
 
 
 def create_bottle_entry(name: str, vintage: str | None = None, upc_barcode_id: str | None = None, vendor: str | None = None,
-                        region: str | None = None, pct_alcohol: str | None = None, drink_by_date: str | None = None,
+                        region_id: str | None = None, pct_alcohol: str | None = None, drink_by_date: str | None = None,
                         tasting_notes: str | None = None, obtainment_note: str | None = None, other_notes: str | None = None,
                         physical_location_id: str | None = None, wine_type_id: str | None = None, country_id: str | None = None,
                         grape_ids: List[str] | None = None, keyword_ids: List[str] | None = None, food_pairing_ids: List[str] | None = None,
@@ -148,7 +148,7 @@ def create_bottle_entry(name: str, vintage: str | None = None, upc_barcode_id: s
         "upc_barcode_id": upc_barcode_id,
         "vendor": vendor,
         "quantity": quantity,
-        "region": region,
+        "region_id": region_id,
         "pct_alcohol": pct_alcohol,
         "drink_by_date": drink_by_date,
         "tasting_notes": tasting_notes,

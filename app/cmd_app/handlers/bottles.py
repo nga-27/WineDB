@@ -271,7 +271,7 @@ def process_bottle_input_data(ui_manager: TerminalUILite) -> None:
             vintage=vintage,
             upc_barcode_id=barcode,
             vendor=winery,
-            region=region_id,
+            region_id=region_id,
             pct_alcohol=pct_alcohol,
             drink_by_date=drink_by_date,
             tasting_notes=tasting_notes,

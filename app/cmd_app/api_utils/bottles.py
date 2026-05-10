@@ -1,6 +1,7 @@
 """ Utilities for API calls for bottles """
 from typing import List, Tuple, Union
 import logging
+import time
 
 import requests
 
@@ -8,7 +9,8 @@ from app.logging_config import LOGGER_NAME
 from .locations import search_wine_locations_for_content
 
 
-def search_supply_for_content(name: str | None = None, vintage: str | None = None, omit_consumed: bool = True) -> List[str]:
+def search_supply_for_content(name: str | None = None, vintage: str | None = None,
+                              omit_consumed: bool = True, by_barcode: bool = False) -> List[str]:
     """ Placeholder function to search for content based on user input """
     consumed_location_id = "NOT-A-REAL-ID"
     if omit_consumed:
@@ -21,6 +23,12 @@ def search_supply_for_content(name: str | None = None, vintage: str | None = Non
         result_names = [
             f'{result["name"]} ({result["vintage"]}) - {result["vendor"]} - QTY: {result["quantity"]}' \
                 for result in results_filtered]
+        return result_names
+    if by_barcode:
+        results = requests.get(f"http://localhost:8282/wine_supplies?name={name}&by_barcode=true")
+        results_filtered = [result for result in results.json() if result["physical_location_id"] != consumed_location_id]
+        result_names = [
+            f'{result["name"]} ({result["vintage"]})' for result in results_filtered]
         return result_names
     if vintage:
         results = requests.get(f"http://localhost:8282/wine_supplies?name={name}&vintage={vintage}")

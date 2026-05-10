@@ -56,14 +56,18 @@ ROUTER = APIRouter(
 
 
 @ROUTER.get("/", status_code=200)
-def get_wine_supplies(name: str | None = None, vintage: str | None = None) -> List[WineSupply]:
+def get_wine_supplies(name: str | None = None, vintage: str | None = None,
+                      by_barcode: bool = False) -> List[WineSupply]:
     wine_supplies: List[WineSupply] = []
     with Session(get_db_interface().engine) as session:
         stmt = select(WineSupply)
-        if name:
-            stmt = stmt.where(WineSupply.name.ilike(f"%{name}%"))
-        if vintage:
-            stmt = stmt.where(WineSupply.vintage == vintage)
+        if by_barcode and name:
+            stmt = stmt.where(WineSupply.upc_barcode_id == name)
+        else:
+            if name:
+                stmt = stmt.where(WineSupply.name.ilike(f"%{name}%"))
+            if vintage:
+                stmt = stmt.where(WineSupply.vintage == vintage)
         wine_supplies = session.exec(stmt).all()
     return wine_supplies
 
@@ -142,6 +146,8 @@ def create_wine_supply(wine_supply: WineSupplyCreate) -> str:
                 stmt = stmt.where(WineSupply.name == wine_supply.name)
             if wine_supply.vintage:
                 stmt = stmt.where(WineSupply.vintage == wine_supply.vintage)
+            if wine_supply.physical_location_id:
+                stmt = stmt.where(WineSupply.physical_location_id == wine_supply.physical_location_id)
             wine_supplies = session.exec(stmt).all()
     except Exception as exc:
         logger.error(f"Error occurred while fetching wine supplies: {exc}")
@@ -150,7 +156,8 @@ def create_wine_supply(wine_supply: WineSupplyCreate) -> str:
     if len(wine_supplies) > 0:
         raise HTTPException(
             status_code=400,
-            detail=f"Supply with name '{wine_supply.name}' and vintage '{wine_supply.vintage}' already exists.")
+            detail=f"Supply with name '{wine_supply.name}', vintage '{wine_supply.vintage}', " + \
+                f"and physical location '{wine_supply.physical_location_id}' already exists.")
 
     try:
         db_supply = WineSupply(

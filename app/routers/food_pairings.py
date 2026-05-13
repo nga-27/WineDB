@@ -36,7 +36,7 @@ def get_food_pairings(name: str | None = None, upc_vintage_sd_id: str | None = N
 
 
 @ROUTER.post("/", status_code=201)
-def create_food_pairing(food_pairing: FoodPairing) -> str:
+def create_food_pairing(food_pairing: FoodPairingCreate) -> str:
     food_pairings: List[FoodPairing] = []
     with Session(get_db_interface().engine) as session:
         stmt = select(FoodPairing)

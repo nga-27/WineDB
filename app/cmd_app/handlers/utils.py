@@ -17,7 +17,7 @@ class BottleHandler:
         """ Prompts user for input and returns it """
         tries = 0
         while tries < 3:
-            self.ui_manager.add_input_content(prompt, self.__callback_function)
+            self.ui_manager.add_input_content(prompt, self.__callback_function, input_timeout=120)
             while self.__callback_data is not None and self.__callback_data == DEFAULT_CALLBACK_DATA:
                 time.sleep(0.1)
             tries += 1

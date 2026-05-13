@@ -7,6 +7,7 @@ def search_countries_for_content(name: str) -> List[str]:
     """ Placeholder function to search for content based on user input """
     results = requests.get(f"http://localhost:8282/countries?name={name}")
     result_names = [f'{result["name"]}, id: {result["country_id"]}' for result in results.json()]
+    result_names.sort()
     return result_names
 
 

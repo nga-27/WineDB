@@ -80,7 +80,8 @@ def process_food_pairing_input(bottler: BottleHandler, food_pairing_list_id: int
         search_results = search_food_pairings_for_content(search_partial)
         bottler.ui_manager.add_text_content("\r\n")
         for i, name_found in enumerate(search_results):
-            bottler.ui_manager.add_text_content(f"\t - [{i+1}] {name_found}")
+            actual_name, _ = name_found.split(", id: ")
+            bottler.ui_manager.add_text_content(f"\t - [{i+1}] {actual_name}")
         bottler.ui_manager.add_text_content("\r\n")
         time.sleep(0.5)
 

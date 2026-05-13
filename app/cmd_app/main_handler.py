@@ -70,7 +70,7 @@ def what_to_do_options(ui_manager: TerminalUILite) -> str:
         ui_manager.add_text_content(f"\t- {PrintColor.CYAN}VIEW WINE SUPPLY{PrintColor.NORMAL} (v or view)")
         ui_manager.add_text_content(f"\t- {PrintColor.YELLOW}EXIT{PrintColor.NORMAL} (e or exit, q or quit)")
         ui_manager.add_text_content("\r\n")
-        ui_manager.add_input_content("\r\nSo... what would you like to do? ", __callback_function)
+        ui_manager.add_input_content("\r\nSo... what would you like to do? ", __callback_function, input_timeout=120)
 
         global CALLBACK_DATA
         while CALLBACK_DATA is not None and CALLBACK_DATA == DEFAULT_CALLBACK_DATA:

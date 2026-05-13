@@ -10,6 +10,7 @@ def search_wine_locations_for_content(name: str | None = None) -> List[str]:
     else:
         results = requests.get(f"http://localhost:8282/locations?name={name}")
     result_names = [f'{result["name"]}, id: {result["location_id"]}' for result in results.json()]
+    result_names.sort()
     return result_names
 
 

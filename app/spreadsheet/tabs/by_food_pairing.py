@@ -16,6 +16,9 @@ def generate_by_food_pairing_tab(wine_supplies: List[WineSupply]) -> List[dict]:
                 pairing_map[pairing.name] = []
             pairing_map[pairing.name].append(wine)
 
+    # Sort pairing map by pairing name
+    pairing_map = dict(sorted(pairing_map.items(), key=lambda item: item[0].lower()))
+
     # Create tab data structure
     tab_data = []
     for pairing_name, wines in pairing_map.items():

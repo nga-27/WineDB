@@ -21,6 +21,9 @@ def generate_by_region_tab(wine_supplies: List[WineSupply],
                 "description": description}
         region_map[region_name]["wines"].append(wine)
 
+    # Sort region map by region name
+    region_map = dict(sorted(region_map.items(), key=lambda item: item[0].lower()))
+
     # Create tab data structure
     tab_data: List[dict] = []
     for region_name, region_data in region_map.items():

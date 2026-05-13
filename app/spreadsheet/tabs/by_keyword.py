@@ -17,6 +17,9 @@ def generate_by_keyword_tab(wine_supplies: List[WineSupply]) -> List[dict]:
                 keyword_map[keyword.keyword] = []
             keyword_map[keyword.keyword].append(wine)
 
+    # Sort keyword map by keyword name
+    keyword_map = dict(sorted(keyword_map.items(), key=lambda item: item[0].lower()))
+
     # Create tab data structure
     tab_data: List[dict] = []
     for keyword_name, wines in keyword_map.items():

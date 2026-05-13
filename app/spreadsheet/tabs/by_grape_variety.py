@@ -18,6 +18,9 @@ def generate_by_grape_variety_tab(wine_supplies: List[WineSupply],
                 description = grape.description if grape else "No description available."
                 variety_map[variety.name] = {"wines": [], "description": description}
             variety_map[variety.name]["wines"].append(wine)
+    
+    # Sort variety map by variety name
+    variety_map = dict(sorted(variety_map.items(), key=lambda item: item[0].lower()))
 
     # Create tab data structure
     tab_data: List[dict] = []

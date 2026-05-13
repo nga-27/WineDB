@@ -16,6 +16,9 @@ def generate_by_type_tab(wine_supplies: List[WineSupply]) -> List[dict]:
             type_map[type_name] = []
         type_map[type_name].append(wine)
 
+    # Sort type map by type name
+    type_map = dict(sorted(type_map.items(), key=lambda item: item[0].lower()))
+
     # Create tab data structure
     tab_data: List[dict] = []
     for type_name, wines in type_map.items():

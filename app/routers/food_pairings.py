@@ -60,3 +60,14 @@ def create_food_pairing(food_pairing: FoodPairingCreate) -> str:
         logger.error(f"Error creating food pairing entry: {exc}")
         raise HTTPException(status_code=500, detail="An error occurred while creating the food pairing entry.")
     return food_pairing_obj.pairing_id
+
+
+@ROUTER.delete("/{pairing_id}", status_code=204)
+def delete_food_pairing(pairing_id: str):
+    with Session(get_db_interface().engine) as session:
+        stmt = select(FoodPairing).where(FoodPairing.pairing_id == pairing_id)
+        food_pairing = session.exec(stmt).first()
+        if not food_pairing:
+            raise HTTPException(status_code=404, detail="Food pairing not found")
+        session.delete(food_pairing)
+        session.commit()

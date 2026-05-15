@@ -52,7 +52,11 @@ def sync_handler(ui_manager: TerminalUILite) -> bool:
     logger.info(f"Retrieved {len(regions_data)} region records from API.")
     logger.info("Regions: %s", regions_data)
     regions = [Region.model_validate(r) for r in regions_data]
-    
+    locations_data: List[dict] = requests.get("http://localhost:8282/locations").json()
+    logger.info(f"Retrieved {len(locations_data)} location records from API.")
+    logger.info("Locations: %s", locations_data)
+    locations = [PhysicalLocation.model_validate(l) for l in locations_data]
+
     wines: List[WineSupply] = []
     for wine_data in wines_data:
         wine = WineSupply.model_validate(wine_data)
@@ -97,6 +101,8 @@ def sync_handler(ui_manager: TerminalUILite) -> bool:
                 tab_data = tab_generator(wines, grapes)
             elif tab_name == "Regions":
                 tab_data = tab_generator(wines, regions)
+            elif tab_name == "Locations":
+                tab_data = tab_generator(wines, locations)
             else:
                 tab_data = tab_generator(wines)
             

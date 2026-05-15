@@ -30,6 +30,7 @@ def generate_easy_wine_tab(wine_supplies: List[WineSupply]) -> List[dict]:
         for wine in wines:
             tab_data.append({
                 "Name": wine.name,
+                "Vineyard": wine.vendor if wine.vendor else "Unknown",
                 "Grapes": ", ".join([grape.name for grape in wine.grapes]) if wine.grapes else "Unknown",
                 "Vintage": wine.vintage,
                 "Region": wine.region.name if wine.region else "Unknown",

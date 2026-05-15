@@ -28,10 +28,11 @@ def generate_by_location_tab(wine_supplies: List[WineSupply],
     tab_data: List[dict] = []
     for location_name, location_data in location_map.items():
         tab_data.append({"Name": " "})  # Add a separator row
-        tab_data.append({"Name": location_name, "Type": location_data["description"]})  # Add a header row for the location
+        tab_data.append({"Name": location_name, "Vineyard": location_data["description"]})  # Add a header row for the location
         for wine in location_data["wines"]:
             tab_data.append({
                 "Name": wine.name,
+                "Vineyard": wine.vendor if wine.vendor else "Unknown",
                 "Type": wine.wine_type.name if wine.wine_type else "Unknown",
                 "Grapes": ", ".join([grape.name for grape in wine.grapes]) if wine.grapes else "Unknown",
                 "Vintage": wine.vintage,

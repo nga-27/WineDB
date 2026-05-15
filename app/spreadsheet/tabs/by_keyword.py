@@ -28,6 +28,7 @@ def generate_by_keyword_tab(wine_supplies: List[WineSupply]) -> List[dict]:
         for wine in wines:
             tab_data.append({
                 "Name": wine.name,
+                "Vineyard": wine.vendor if wine.vendor else "Unknown",
                 "Type": wine.wine_type.name if wine.wine_type else "Unknown",
                 "Grapes": ", ".join([grape.name for grape in wine.grapes]) if wine.grapes else "Unknown",
                 "Vintage": wine.vintage,

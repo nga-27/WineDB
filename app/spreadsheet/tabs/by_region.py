@@ -28,10 +28,11 @@ def generate_by_region_tab(wine_supplies: List[WineSupply],
     tab_data: List[dict] = []
     for region_name, region_data in region_map.items():
         tab_data.append({"Name": " "})  # Add a separator row
-        tab_data.append({"Name": region_name, "Type": region_data["description"]})  # Add a header row for the region
+        tab_data.append({"Name": region_name, "Vineyard": region_data["description"]})  # Add a header row for the region
         for wine in region_data["wines"]:
             tab_data.append({
                 "Name": wine.name,
+                "Vineyard": wine.vendor if wine.vendor else "Unknown",
                 "Type": wine.wine_type.name if wine.wine_type else "Unknown",
                 "Grapes": ", ".join([grape.name for grape in wine.grapes]) if wine.grapes else "Unknown",
                 "Vintage": wine.vintage,

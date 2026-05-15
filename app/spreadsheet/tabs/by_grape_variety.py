@@ -26,10 +26,11 @@ def generate_by_grape_variety_tab(wine_supplies: List[WineSupply],
     tab_data: List[dict] = []
     for variety_name, obj_data in variety_map.items():
         tab_data.append({"Name": " "})  # Add a separator row
-        tab_data.append({"Name": variety_name, "Type": obj_data["description"]})  # Add a header row for the grape variety
+        tab_data.append({"Name": variety_name, "Vineyard": obj_data["description"]})  # Add a header row for the grape variety
         for wine in obj_data["wines"]:
             tab_data.append({
                 "Name": wine.name,
+                "Vineyard": wine.vendor if wine.vendor else "Unknown",
                 "Type": wine.wine_type.name if wine.wine_type else "Unknown",
                 "Vintage": wine.vintage,
                 "Region": wine.region.name if wine.region else "Unknown",

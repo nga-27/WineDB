@@ -23,6 +23,8 @@ def generate_by_location_tab(wine_supplies: List[WineSupply],
 
     # Sort location map by location name
     location_map = dict(sorted(location_map.items(), key=lambda item: item[0].lower()))
+    for wines in location_map.values():
+        wines["wines"].sort(key=lambda w: w.pct_alcohol.lower() if w.pct_alcohol else "0.0", reverse=True)
 
     # Create tab data structure
     tab_data: List[dict] = []

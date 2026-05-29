@@ -19,6 +19,8 @@ def generate_by_keyword_tab(wine_supplies: List[WineSupply]) -> List[dict]:
 
     # Sort keyword map by keyword name
     keyword_map = dict(sorted(keyword_map.items(), key=lambda item: item[0].lower()))
+    for wines in keyword_map.values():
+        wines.sort(key=lambda w: w.pct_alcohol.lower() if w.pct_alcohol else "0.0", reverse=True)
 
     # Create tab data structure
     tab_data: List[dict] = []
@@ -50,20 +52,30 @@ def generate_by_keyword_tab(wine_supplies: List[WineSupply]) -> List[dict]:
 def generate_keyword_summary(wine_supplies: List[WineSupply]) -> List[dict]:
     """ Generate a summary of keyword usage across wines """
     summary = {}
+    total_available = 0
+    total_consumed = 0
     for wine in wine_supplies:
         if wine.physical_location and wine.physical_location.name == "Consumed":
+            total_consumed += wine.quantity if wine.quantity else 1
             continue  # Skip consumed wines
+        total_available += wine.quantity if wine.quantity else 1
         for keyword in wine.keywords:
             if keyword.keyword not in summary:
                 summary[keyword.keyword] = 0
             summary[keyword.keyword] += 1
     
+    summary = dict(sorted(summary.items(), key=lambda item: item[1], reverse=True))
     # Create tab data structure
     tab_data: List[dict] = []
     for keyword_name, count in summary.items():
         tab_data.append({
             "Keyword": keyword_name,
-            "Count": count
+            "Count": count,
+            " ": "", # spacer
+            "Total Bottles Available:": "",
+            str(total_available): "",
+            "Total Bottles Consumed:": "",
+            str(total_consumed): "",
         })
 
     return tab_data

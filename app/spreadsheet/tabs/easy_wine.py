@@ -21,6 +21,8 @@ def generate_easy_wine_tab(wine_supplies: List[WineSupply]) -> List[dict]:
 
     # Sort type map by type name
     type_map = dict(sorted(type_map.items(), key=lambda item: item[0].lower()))
+    for wines in type_map.values():
+        wines.sort(key=lambda w: w.pct_alcohol.lower() if w.pct_alcohol else "0.0", reverse=True)
 
     # Create tab data structure
     tab_data: List[dict] = []

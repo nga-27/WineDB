@@ -1,7 +1,9 @@
 """ Tab to organize wines by region """
 from typing import List, Dict
+import logging
 
 from app.db.database import WineSupply, Region
+from app.logging_config import LOGGER_NAME
 
 
 def generate_by_region_tab(wine_supplies: List[WineSupply],

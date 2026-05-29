@@ -18,6 +18,8 @@ def generate_by_food_pairing_tab(wine_supplies: List[WineSupply]) -> List[dict]:
 
     # Sort pairing map by pairing name
     pairing_map = dict(sorted(pairing_map.items(), key=lambda item: item[0].lower()))
+    for wines in pairing_map.values():
+        wines.sort(key=lambda w: w.pct_alcohol.lower() if w.pct_alcohol else "0.0", reverse=True)
 
     # Create tab data structure
     tab_data = []

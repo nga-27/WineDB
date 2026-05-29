@@ -98,7 +98,7 @@ def auto_seed() -> bool:
         {"name": "Cheese", "description": "Hard and soft cheeses."},
         {"name": "Pasta", "description": "Italian dishes with tomato or cream sauces."},
         {"name": "Dessert", "description": "Sweet treats like chocolate or fruit."},
-        {"name": "Vegetables / Salad", "description": "Grilled or roasted veggies."},
+        {"name": "Vegetables / Salads", "description": "Grilled or roasted veggies."},
         {"name": "Spicy Food", "description": "Dishes with heat and spices."}
     ]
 

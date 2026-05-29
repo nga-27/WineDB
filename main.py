@@ -30,7 +30,7 @@ def run_cmd_prompts():
     """ Run the command prompt 'UI' """
     ui_manager = TerminalUILite(ascii_generator)
     startup(BASE_URL, ui_manager)
-    run(BASE_URL, ui_manager)
+    run(ui_manager)
     shutdown(BASE_URL, ui_manager)
 
 

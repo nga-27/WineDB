@@ -47,8 +47,8 @@ def create_region_entry(name: str, bottler: BottleHandler) -> Tuple[str, bool]:
 
     new_region_id, was_successful = create_region(
         new_region["name"],
-        new_region["country_id"],
-        new_region["description"]
+        country_id=new_region["country_id"],
+        description=new_region["description"]
     )
     if not was_successful:
         # new_region_id in this case will actually be the error message, so we return that for

@@ -1,37 +1,37 @@
 """ Tab to organize wines by region """
 from typing import List, Dict
-import logging
 
-from app.db.database import WineSupply, Region
-from app.logging_config import LOGGER_NAME
+from app.db.database import WineSupply, PhysicalLocation
 
 
-def generate_by_region_tab(wine_supplies: List[WineSupply],
-                           regions: List[Region]) -> List[dict]:
-    """ Generate the 'By Region' tab of the spreadsheet """
-    # Create a mapping of regions to wines
-    region_map: Dict[str, List[WineSupply]] = {}
+def generate_by_location_tab(wine_supplies: List[WineSupply],
+                             locations: List[PhysicalLocation]) -> List[dict]:
+    """ Generate the 'By Location' tab of the spreadsheet """
+    # Create a mapping of locations to wines
+    location_map: Dict[str, List[WineSupply]] = {}
     for wine in wine_supplies:
         if wine.physical_location and wine.physical_location.name == "Consumed":
             continue  # Skip consumed wines
-        region_name = wine.region.name if wine.region else "Unknown"
-        if region_name not in region_map:
-            region = next((r for r in regions if r.name == region_name), None)
-            description = region.description if region else "No description available."
-            region_map[region_name] = {
+        location_name = wine.physical_location.name if wine.physical_location else "Unknown"
+        if location_name not in location_map:
+            location = next((l for l in locations if l.name == location_name), None)
+            description = location.description if location else "No description available."
+            location_map[location_name] = {
                 "wines": [],
                 "description": description}
-        region_map[region_name]["wines"].append(wine)
+        location_map[location_name]["wines"].append(wine)
 
-    # Sort region map by region name
-    region_map = dict(sorted(region_map.items(), key=lambda item: item[0].lower()))
+    # Sort location map by location name
+    location_map = dict(sorted(location_map.items(), key=lambda item: item[0].lower()))
+    for wines in location_map.values():
+        wines["wines"].sort(key=lambda w: w.pct_alcohol.lower() if w.pct_alcohol else "0.0", reverse=True)
 
     # Create tab data structure
     tab_data: List[dict] = []
-    for region_name, region_data in region_map.items():
+    for location_name, location_data in location_map.items():
         tab_data.append({"Name": " "})  # Add a separator row
-        tab_data.append({"Name": region_name, "Vineyard": region_data["description"]})  # Add a header row for the region
-        for wine in region_data["wines"]:
+        tab_data.append({"Name": location_name, "Vineyard": location_data["description"]})  # Add a header row for the location
+        for wine in location_data["wines"]:
             tab_data.append({
                 "Name": wine.name,
                 "Vineyard": wine.vendor if wine.vendor else "Unknown",
@@ -42,7 +42,7 @@ def generate_by_region_tab(wine_supplies: List[WineSupply],
                 "PCT": wine.pct_alcohol if wine.pct_alcohol else "Unknown",
                 "Quantity": wine.quantity if wine.quantity else "Unknown",
                 "Obtainment Note": wine.obtainment_note if wine.obtainment_note else "None",
-                "Location": wine.physical_location.name if wine.physical_location else "Unknown",
+                "Region": wine.region.name if wine.region else "Unknown",
                 "Drink By Date": wine.drink_by_date if wine.drink_by_date else "Unknown",
                 "Keywords": ", ".join([keyword.keyword for keyword in wine.keywords]) if wine.keywords else "n/a",
                 "Tasting Notes": wine.tasting_notes if wine.tasting_notes else "None",

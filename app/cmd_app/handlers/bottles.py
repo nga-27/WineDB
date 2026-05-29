@@ -40,9 +40,51 @@ def process_name_input(bottler: BottleHandler) -> Tuple[str, str | None, bool]:
     vintage = None
     needs_entry = True
     name = bottler.handle_input("What's the name of the wine? (-s for search) ")
-    if name is None:
+    if name is None or len(name.strip()) == 0:
         return "", None, False
-    if "-s" in name:
+    if len(name.strip()) == 13 and name.strip().isdigit():
+        barcode_response = bottler.handle_input(f"\r\nIs '{name}' a UPC barcode? [Y/n] ")
+        if barcode_response is not None and (len(barcode_response) == 0 or barcode_response.lower() in ["y", "yes"]):
+            name = name.strip()
+            search_results = search_supply_for_content(name, by_barcode=True)
+            if len(search_results) == 0:
+                bottler.ui_manager.add_text_content(f"\r\nNo wine supply found matching UPC barcode '{name}'. Resetting.")
+                time.sleep(2)
+                return "", None, False
+            bottler.ui_manager.add_text_content("\r\n")
+            search_results = sorted(search_results, key=lambda x: x.lower())
+            for i, name in enumerate(search_results):
+                bottler.ui_manager.add_text_content(f"\t - [{i+1}] {name}")
+            bottler.ui_manager.add_text_content("\r\n")
+            time.sleep(0.5)
+
+            name_and_vintage = bottler.handle_input("Pick one of these or enter a new name? (type number) ")
+            if name_and_vintage.isdigit() and 1 <= int(name_and_vintage) <= len(search_results):
+                name_and_vintage = search_results[int(name_and_vintage)-1]
+                name = name_and_vintage.split(" (")[0]
+                vintage = name_and_vintage.split(" (")[1].split(") - ")[0]
+                vintage_response = bottler.handle_input(f"\r\nSame vintage as {vintage}? [Y/n] ")
+                if vintage_response is not None and \
+                    (len(vintage_response) > 0 and vintage_response.lower() in ["n", "no"]):
+                    vintage = None
+                if vintage is not None:
+                    vintage_response = bottler.handle_input("Should we add another bottle to the supply? [Y/n] ")
+                    if vintage_response is not None and \
+                        (len(vintage_response) == 0 or vintage_response.lower() in ["y", "yes"]):
+                        was_successful, error_message = increase_bottle_supply(name, vintage)
+                        if was_successful:
+                            bottler.ui_manager.add_text_content(f"\r\n\033[32mAdded another bottle of {name} ({vintage}) to the supply!\033[39m")
+                            needs_entry = False
+                        else:
+                            bottler.ui_manager.add_text_content(f"\r\n\033[31mSorry, something went wrong adding another bottle of {name} ({vintage}) to the supply.\033[39m")
+                            bottler.ui_manager.add_text_content(f"\r\nError: {error_message}\r\n")
+                        time.sleep(2)
+            else:
+                bottler.ui_manager.add_text_content(
+                    f"\r\nWe'll start a new bottle entry for '{name_and_vintage}'")
+                name = name_and_vintage
+                time.sleep(2)
+    elif "-s" in name:
         search_partial = name.replace("-s", "").strip()
         search_results = search_supply_for_content(search_partial)
         if len(search_results) == 0:
@@ -50,6 +92,7 @@ def process_name_input(bottler: BottleHandler) -> Tuple[str, str | None, bool]:
             time.sleep(2)
             return "", None, False
         bottler.ui_manager.add_text_content("\r\n")
+        search_results = sorted(search_results, key=lambda x: x.lower())
         for i, name in enumerate(search_results):
             bottler.ui_manager.add_text_content(f"\t - [{i+1}] {name}")
         bottler.ui_manager.add_text_content("\r\n")
@@ -230,7 +273,7 @@ def process_bottle_input_data(ui_manager: TerminalUILite) -> None:
             vintage=vintage,
             upc_barcode_id=barcode,
             vendor=winery,
-            region=region_id,
+            region_id=region_id,
             pct_alcohol=pct_alcohol,
             drink_by_date=drink_by_date,
             tasting_notes=tasting_notes,

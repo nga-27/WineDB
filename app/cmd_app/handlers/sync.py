@@ -44,7 +44,19 @@ def sync_handler(ui_manager: TerminalUILite) -> bool:
     wines_data: List[dict] = requests.get("http://localhost:8282/wine_supplies/joined").json()
     logger.info(f"Retrieved {len(wines_data)} wine records from API.")
     logger.info("Wines: %s", wines_data)
-    
+    grapes_data: List[dict] = requests.get("http://localhost:8282/grape_varieties").json()
+    logger.info(f"Retrieved {len(grapes_data)} grape variety records from API.")
+    logger.info("Grapes: %s", grapes_data)
+    grapes = [GrapeVariety.model_validate(g) for g in grapes_data]
+    regions_data: List[dict] = requests.get("http://localhost:8282/regions").json()
+    logger.info(f"Retrieved {len(regions_data)} region records from API.")
+    logger.info("Regions: %s", regions_data)
+    regions = [Region.model_validate(r) for r in regions_data]
+    locations_data: List[dict] = requests.get("http://localhost:8282/locations").json()
+    logger.info(f"Retrieved {len(locations_data)} location records from API.")
+    logger.info("Locations: %s", locations_data)
+    locations = [PhysicalLocation.model_validate(l) for l in locations_data]
+
     wines: List[WineSupply] = []
     for wine_data in wines_data:
         wine = WineSupply.model_validate(wine_data)
@@ -64,11 +76,9 @@ def sync_handler(ui_manager: TerminalUILite) -> bool:
             wine.food_pairings = [FoodPairing(name=fp) for fp in wine_data["food_pairings"]]
         if wine_data.get("keywords"):
             wine.keywords = [Keywords(keyword=k) for k in wine_data["keywords"]]
-        
         wines.append(wine)
     
     logger.info("Wines after conversion: %s", wines)
-    
     if not wines or len(wines) == 0:
         ui_manager.add_text_content("\033[31mNo wines found in database to export.\033[39m")
         time.sleep(2)
@@ -87,7 +97,14 @@ def sync_handler(ui_manager: TerminalUILite) -> bool:
     with pd.ExcelWriter(output_path, engine="openpyxl") as writer:
         for tab_name, tab_generator in TAB_MAP.items():
             ui_manager.add_text_content(f"Generating '{tab_name}' tab...")
-            tab_data = tab_generator(wines)
+            if tab_name == "Grape Varieties":
+                tab_data = tab_generator(wines, grapes)
+            elif tab_name == "Regions":
+                tab_data = tab_generator(wines, regions)
+            elif tab_name == "Locations":
+                tab_data = tab_generator(wines, locations)
+            else:
+                tab_data = tab_generator(wines)
             
             if tab_data:
                 logger.info("Tab data for '%s': %s", tab_name, tab_data)
@@ -116,10 +133,13 @@ def sync_handler(ui_manager: TerminalUILite) -> bool:
                 name_cell = sheet.cell(row=row_idx, column=1)  # Assuming "Name" is first column
                 if name_cell.value and all(
                     sheet.cell(row=row_idx, column=col_idx + 1).value in [None, ''] 
-                    for col_idx in range(1, len(columns))
+                    for col_idx in range(2, len(columns))
                 ):
                     # This is a header row (Name has value, others are empty)
                     name_cell.font = Font(bold=True)
+                    second_cell = sheet.cell(row=row_idx, column=2)
+                    if second_cell.value:
+                        second_cell.font = Font(italic=True)
             
             # Adjust column widths based on max content length
             for col_idx, column in enumerate(columns, start=1):
@@ -148,10 +168,15 @@ def sync_handler(ui_manager: TerminalUILite) -> bool:
                 ui_manager.add_text_content("\033[33mSync path not found in settings. Skipping drive sync.\033[39m")
             else:
                 shutil.copy(output_path, sync_path)
+                db_output_path = os.path.join(os.path.dirname(os.path.dirname(output_path)), "wineDB.db")
+                db_sync_path = os.path.join(os.path.dirname(sync_path), "wineDB.db")
+                ui_manager.add_text_content("Copying database file to sync location...")
+                shutil.copy(db_output_path, db_sync_path)
                 ui_manager.add_text_content(f"\033[32mSpreadsheet synced to drive location: {sync_path}\033[39m")
+                ui_manager.add_text_content(f"\033[32mDatabase file synced to drive location: {db_sync_path}\033[39m")
         except Exception as exc:
             logger.error(f"Error loading settings from {SETTINGS_FILE_PATH}: {exc}")
             ui_manager.add_text_content("\033[31mError loading settings. See logs for details.\033[39m")
 
-    time.sleep(5)
+    time.sleep(3)
     return True

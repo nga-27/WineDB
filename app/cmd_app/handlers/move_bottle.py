@@ -1,59 +1,51 @@
+""" Move a bottle from one location to another. """
 import time
-from typing import Tuple, Union
-import datetime
+from typing import Tuple
 
 from terminal_ui_lite import TerminalUILite
 
 from app.cmd_app.api_utils.bottles import (
-    search_supply_for_content, decrease_bottle_supply
+    search_supply_for_content, move_bottle_location
 )
+from app.cmd_app.api_utils.locations import search_wine_locations_for_content
 from .utils import BottleHandler
+from .generic import process_linking_input
 from .bottles import process_vintage_input
 
 
-def consume_handler(ui_manager: TerminalUILite) -> bool:
-    """consume_handler
+def move_bottle_handler(ui_manager: TerminalUILite) -> bool:
+    """move_bottle_handler
 
-    Handles the consume command - allows user to mark a bottle as consumed
+    Handles the move bottle command - allows user to move a bottle from one location to another
 
     Args:
         ui_manager (TerminalUILite): ui manager instance
 
     Returns:
-        bool: on success of marking bottle as consumed
+        bool: on success of moving bottle
     """
     ui_manager.add_text_content(
-        "\r\nCool, let's DRINK a bottle! (This will mark the bottle as consumed in the database)\r\n")
+        "\r\nCool, let's move a bottle! (This will update the bottle's location in the database)\r\n")
     time.sleep(1)
     ui_manager.clear_content()
     time.sleep(0.5)
-    process_consumption_input_data(ui_manager)
+    process_move_input_data(ui_manager)
     time.sleep(2)
     return True
 
 ##################################
 
-def process_consumption_input_data(ui_manager: TerminalUILite) -> None:
+def process_move_input_data(ui_manager: TerminalUILite) -> None:
     """ Prompts user for bottle information and processes it """
-    vintage = None
-    name = None
     bottler = BottleHandler(ui_manager)
     ui_manager.add_text_content("\r\nLet's start with the basics...\r\n")
     time.sleep(1)
 
-    name, vintage, needs_entry = process_name_input(bottler)
+    _, _, needs_entry = process_name_input(bottler)
     if not needs_entry:
         return
     bottler.ui_manager.clear_content()
     time.sleep(0.5)
-
-    vintage, needs_entry, alt_name = process_vintage_input(bottler, name, vintage)
-    if not needs_entry:
-        return
-    if alt_name is not None:
-        name = alt_name
-    bottler.ui_manager.clear_content()
-    time.sleep(0.5)  
 
 
 def process_name_input(bottler: BottleHandler) -> Tuple[str, str | None, bool]:
@@ -87,24 +79,28 @@ def process_name_input(bottler: BottleHandler) -> Tuple[str, str | None, bool]:
                     (len(vintage_response) > 0 and vintage_response.lower() in ["n", "no"]):
                     vintage = None
                 if vintage is not None:
-                    vintage_response = bottler.handle_input("Should we consume this bottle from the supply? [Y/n] ")
+                    vintage_response = bottler.handle_input("Should we move this bottle to a different location? [Y/n] ")
                     if vintage_response is not None and \
                         (len(vintage_response) == 0 or vintage_response.lower() in ["y", "yes"]):
-                        rating, rating_notes, drank_date, drank_date_event = process_consumed_evaluation(bottler)
-                        was_successful, error_message = decrease_bottle_supply(
-                            name, vintage, rating, rating_notes, drank_date, drank_date_event)
+                        location_name, location_id = process_linking_input(
+                            bottler, "physical location", search_wine_locations_for_content)
+                        if location_name == "Consumed":
+                            bottler.ui_manager.add_text_content(f"\r\n\033[31mSorry, you can't move a bottle to the 'Consumed' location. Please choose a different location.\033[39m")
+                            time.sleep(2)
+                            return name, vintage, needs_entry
+                        was_successful, error_message = move_bottle_location(name, vintage, location_id)
                         if was_successful:
-                            bottler.ui_manager.add_text_content(f"\r\n\033[32mConsumed a bottle of {name} ({vintage}) from the supply!\033[39m")
+                            bottler.ui_manager.add_text_content(f"\r\n\033[32mMoved a bottle of {name} ({vintage}) to {location_name}!\033[39m")
                             needs_entry = False
                         else:
-                            bottler.ui_manager.add_text_content(f"\r\n\033[31mSorry, something went wrong consuming a bottle of {name} ({vintage}) from the supply.\033[39m")
+                            bottler.ui_manager.add_text_content(f"\r\n\033[31mSorry, something went wrong moving a bottle of {name} ({vintage}) to {location_name}.\033[39m")
                             bottler.ui_manager.add_text_content(f"\r\nError: {error_message}\r\n")
                             time.sleep(5)
                         time.sleep(2)
                 
             else:
                 bottler.ui_manager.add_text_content(
-                    f"\r\n\033[33mCouldn't find a bottle to consume named '{name_and_vintage}'\033[39m")
+                    f"\r\n\033[33mCouldn't find a bottle to move named '{name_and_vintage}'\033[39m")
                 name = name_and_vintage
                 time.sleep(2)
     elif "-s" in name:
@@ -114,6 +110,7 @@ def process_name_input(bottler: BottleHandler) -> Tuple[str, str | None, bool]:
             bottler.ui_manager.add_text_content(f"\r\nNo wine supply found matching '{search_partial}'. Resetting.")
             time.sleep(2)
             return "", None, False
+        search_results = sorted(search_results, key=lambda x: x.lower())
         bottler.ui_manager.add_text_content("\r\n")
         for i, name in enumerate(search_results):
             bottler.ui_manager.add_text_content(f"\t - [{i+1}] {name}")
@@ -130,51 +127,26 @@ def process_name_input(bottler: BottleHandler) -> Tuple[str, str | None, bool]:
                 (len(vintage_response) > 0 and vintage_response.lower() in ["n", "no"]):
                 vintage = None
             if vintage is not None:
-                vintage_response = bottler.handle_input("Should we consume this bottle from the supply? [Y/n] ")
+                vintage_response = bottler.handle_input("Should we move this bottle to a different location? [Y/n] ")
                 if vintage_response is not None and \
                     (len(vintage_response) == 0 or vintage_response.lower() in ["y", "yes"]):
-                    rating, rating_notes, drank_date, drank_date_event = process_consumed_evaluation(bottler)
-                    was_successful, error_message = decrease_bottle_supply(
-                        name, vintage, rating, rating_notes, drank_date, drank_date_event)
+                    location_name, location_id = process_linking_input(
+                            bottler, "physical location", search_wine_locations_for_content)
+                    if location_name == "Consumed":
+                        bottler.ui_manager.add_text_content(f"\r\n\033[31mSorry, you can't move a bottle to the 'Consumed' location. Please choose a different location.\033[39m")
+                        time.sleep(2)
+                        return name, vintage, needs_entry
+                    was_successful, error_message = move_bottle_location(name, vintage, location_id)
                     if was_successful:
-                        bottler.ui_manager.add_text_content(f"\r\n\033[32mConsumed a bottle of {name} ({vintage}) from the supply!\033[39m")
+                        bottler.ui_manager.add_text_content(f"\r\n\033[32mMoved a bottle of {name} ({vintage}) to {location_name}!\033[39m")
                         needs_entry = False
                     else:
-                        bottler.ui_manager.add_text_content(f"\r\n\033[31mSorry, something went wrong consuming a bottle of {name} ({vintage}) from the supply.\033[39m")
+                        bottler.ui_manager.add_text_content(f"\r\n\033[31mSorry, something went wrong moving a bottle of {name} ({vintage}) to {location_name}.\033[39m")
                         bottler.ui_manager.add_text_content(f"\r\nError: {error_message}\r\n")
                     time.sleep(2)
         else:
             bottler.ui_manager.add_text_content(
-                f"\r\n\033[33mCouldn't find a bottle to consume named '{name_and_vintage}'\033[39m")
+                f"\r\n\033[33mCouldn't find a bottle to move named '{name_and_vintage}'\033[39m")
             name = name_and_vintage
             time.sleep(2)
     return name, vintage, needs_entry
-
-
-def process_consumed_evaluation(
-        bottler: BottleHandler) -> Tuple[Union[str, None], Union[str, None], str, Union[str, None]]:
-    """ Prompts user for evaluation of consumed bottle and processes it """
-    rating = None
-    rating_notes = None
-    drank_date = datetime.datetime.today().strftime('%Y-%m-%d')
-    drank_date_event = None
-    rating_input = bottler.handle_input("\r\nHow would you rate this wine on a scale of 0.0-5.0? ")
-    if rating_input is not None and rating_input.replace('.', '').isdigit() and 0.0 <= float(rating_input) <= 5.0:
-        rating = float(rating_input)
-        rating = str(rating)  # Convert to string for database storage
-    rating_notes_input = bottler.handle_input("\r\nAny rating/tasting notes you'd like to add? ")
-    if rating_notes_input is not None:
-        rating_notes = rating_notes_input
-    drank_date_input = bottler.handle_input("\r\nWhen did you drink this? (YYYY-MM-DD, default to today) ")
-    if drank_date_input is not None and len(drank_date_input.strip()) > 0:
-        try:
-            datetime.datetime.strptime(drank_date_input.strip(), '%Y-%m-%d')
-            drank_date = drank_date_input.strip()
-        except ValueError:
-            bottler.ui_manager.add_text_content("\r\n\033[33mInvalid date format. Defaulting to today's date.\033[39m")
-            time.sleep(2)
-    drank_date_event_input = bottler.handle_input(
-        "\r\nDid you drink this for a special event or occasion? If so, please briefly describe. ")
-    if drank_date_event_input is not None:
-        drank_date_event = drank_date_event_input
-    return rating, rating_notes, drank_date, drank_date_event

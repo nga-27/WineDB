@@ -19,6 +19,7 @@ def generate_by_drink_by_date_tab(wine_supplies: List[WineSupply]) -> List[dict]
             continue  # Skip consumed wines
         tab_data.append({
             "Name": wine.name,
+            "Vineyard": wine.vendor if wine.vendor else "Unknown",
             "Drink By Date": wine.drink_by_date,
             "Type": wine.wine_type.name if wine.wine_type else "Unknown",
             "Grapes": ", ".join([grape.name for grape in wine.grapes]) if wine.grapes else "Unknown",

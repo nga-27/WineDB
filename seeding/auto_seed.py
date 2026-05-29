@@ -70,15 +70,19 @@ def auto_seed() -> bool:
 
     # Sample data for keywords
     keywords = [
-        {"keyword": "Bold", "description": "Strong, full-bodied flavors."},
+        {"keyword": "Acidic", "description": "High acidity, crisp and refreshing."},
+        {"keyword": "Crisp", "description": "Fresh and acidic."},
         {"keyword": "Light", "description": "Delicate and subtle."},
+        {"keyword": "Fruity", "description": "Prominent fruit flavors."},
+        {"keyword": "Jammy", "description": "Overripe fruit flavors, like jam."},
+        
         {"keyword": "Dry", "description": "Not sweet, low residual sugar."},
         {"keyword": "Sweet", "description": "High residual sugar."},
+        {"keyword": "Bold", "description": "Strong, full-bodied flavors."},
         {"keyword": "Tannic", "description": "Astringent from tannins."},
-        {"keyword": "Fruity", "description": "Prominent fruit flavors."},
+
         {"keyword": "Earthy", "description": "Soil-like or mineral notes."},
         {"keyword": "Oaky", "description": "Influenced by oak aging."},
-        {"keyword": "Crisp", "description": "Fresh and acidic."},
         {"keyword": "Smooth", "description": "Soft and velvety texture."}
     ]
 
@@ -94,7 +98,7 @@ def auto_seed() -> bool:
         {"name": "Cheese", "description": "Hard and soft cheeses."},
         {"name": "Pasta", "description": "Italian dishes with tomato or cream sauces."},
         {"name": "Dessert", "description": "Sweet treats like chocolate or fruit."},
-        {"name": "Vegetables", "description": "Grilled or roasted veggies."},
+        {"name": "Vegetables / Salads", "description": "Grilled or roasted veggies."},
         {"name": "Spicy Food", "description": "Dishes with heat and spices."}
     ]
 

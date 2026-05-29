@@ -1,39 +1,39 @@
-""" Tab to organize wines by grape variety """
+""" Tab to organize wines by type (Red, White, etc.) """
 from typing import Dict, List
 
-from app.db.database import WineSupply, GrapeVariety
+from app.db.database import WineSupply
 
 
-def generate_by_grape_variety_tab(wine_supplies: List[WineSupply],
-                                  grapes: List[GrapeVariety]) -> List[dict]:
-    """ Generate the 'By Grape Variety' tab of the spreadsheet """
-    # Create a mapping of grape varieties to wines
-    variety_map: Dict[str, List[WineSupply]] = {}
+def generate_easy_wine_tab(wine_supplies: List[WineSupply]) -> List[dict]:
+    """ Generate the 'By Type' tab of the spreadsheet """
+    # Create a mapping of wine types to wines
+    type_map: Dict[str, List[WineSupply]] = {}
     for wine in wine_supplies:
         if wine.physical_location and wine.physical_location.name == "Consumed":
             continue  # Skip consumed wines
-        for variety in wine.grapes:
-            if variety.name not in variety_map:
-                grape = next((g for g in grapes if g.name == variety.name), None)
-                description = grape.description if grape else "No description available."
-                variety_map[variety.name] = {"wines": [], "description": description}
-            variety_map[variety.name]["wines"].append(wine)
-    
-    # Sort variety map by variety name
-    variety_map = dict(sorted(variety_map.items(), key=lambda item: item[0].lower()))
-    for wines in variety_map.values():
-        wines["wines"].sort(key=lambda w: w.pct_alcohol.lower() if w.pct_alcohol else "0.0", reverse=True)
+        if not wine.keywords or \
+            not any(keyword.keyword.lower() == "easy-wine" for keyword in wine.keywords):
+            continue
+        type_name = wine.wine_type.name if wine.wine_type else "Unknown"
+        if type_name not in type_map:
+            type_map[type_name] = []
+        type_map[type_name].append(wine)
+
+    # Sort type map by type name
+    type_map = dict(sorted(type_map.items(), key=lambda item: item[0].lower()))
+    for wines in type_map.values():
+        wines.sort(key=lambda w: w.pct_alcohol.lower() if w.pct_alcohol else "0.0", reverse=True)
 
     # Create tab data structure
     tab_data: List[dict] = []
-    for variety_name, obj_data in variety_map.items():
+    for type_name, wines in type_map.items():
         tab_data.append({"Name": " "})  # Add a separator row
-        tab_data.append({"Name": variety_name, "Vineyard": obj_data["description"]})  # Add a header row for the grape variety
-        for wine in obj_data["wines"]:
+        tab_data.append({"Name": type_name})  # Add a header row for the type
+        for wine in wines:
             tab_data.append({
                 "Name": wine.name,
                 "Vineyard": wine.vendor if wine.vendor else "Unknown",
-                "Type": wine.wine_type.name if wine.wine_type else "Unknown",
+                "Grapes": ", ".join([grape.name for grape in wine.grapes]) if wine.grapes else "Unknown",
                 "Vintage": wine.vintage,
                 "Region": wine.region.name if wine.region else "Unknown",
                 "Country": wine.country.name if wine.country else "Unknown",

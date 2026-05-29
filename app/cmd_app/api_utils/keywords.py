@@ -7,6 +7,7 @@ def search_keywords_for_content(name: str) -> List[str]:
     """ Placeholder function to search for content based on user input """
     results = requests.get(f"http://localhost:8282/keywords?name={name}")
     result_names = [f'{result["keyword"]}, id: {result["keyword_id"]}' for result in results.json()]
+    result_names.sort()
     return result_names
 
 

@@ -6,3 +6,5 @@ from .by_keyword import generate_by_keyword_tab, generate_keyword_summary
 from .by_region import generate_by_region_tab
 from .by_type import generate_by_type_tab
 from .consumed import generate_consumed_tab
+from .by_location import generate_by_location_tab
+from .easy_wine import generate_easy_wine_tab

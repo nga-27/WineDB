@@ -7,7 +7,7 @@ from pydantic import BaseModel
 from sqlmodel import Session, select
 
 from app.logging_config import LOGGER_NAME
-from app.db.database import get_db_interface, FoodPairing
+from app.db.database import get_db_interface, FoodPairing, SupplyFoodPairingLink
 
 
 class FoodPairingCreate(BaseModel):
@@ -22,18 +22,21 @@ ROUTER = APIRouter(
 
 
 @ROUTER.get("/", status_code=200)
-def get_food_pairings(name: str | None = None) -> List[FoodPairing]:
+def get_food_pairings(name: str | None = None, upc_vintage_sd_id: str | None = None) -> List[FoodPairing]:
     food_pairings: List[FoodPairing] = []
     with Session(get_db_interface().engine) as session:
         stmt = select(FoodPairing)
         if name:
             stmt = stmt.where(FoodPairing.name.ilike(f"%{name}%"))
+        if upc_vintage_sd_id:
+            stmt = stmt.join(SupplyFoodPairingLink, FoodPairing.pairing_id == SupplyFoodPairingLink.pairing_id)
+            stmt = stmt.where(SupplyFoodPairingLink.supply_id == upc_vintage_sd_id)
         food_pairings = session.exec(stmt).all()
     return food_pairings
 
 
 @ROUTER.post("/", status_code=201)
-def create_food_pairing(food_pairing: FoodPairing) -> str:
+def create_food_pairing(food_pairing: FoodPairingCreate) -> str:
     food_pairings: List[FoodPairing] = []
     with Session(get_db_interface().engine) as session:
         stmt = select(FoodPairing)
@@ -57,3 +60,14 @@ def create_food_pairing(food_pairing: FoodPairing) -> str:
         logger.error(f"Error creating food pairing entry: {exc}")
         raise HTTPException(status_code=500, detail="An error occurred while creating the food pairing entry.")
     return food_pairing_obj.pairing_id
+
+
+@ROUTER.delete("/{pairing_id}", status_code=204)
+def delete_food_pairing(pairing_id: str):
+    with Session(get_db_interface().engine) as session:
+        stmt = select(FoodPairing).where(FoodPairing.pairing_id == pairing_id)
+        food_pairing = session.exec(stmt).first()
+        if not food_pairing:
+            raise HTTPException(status_code=404, detail="Food pairing not found")
+        session.delete(food_pairing)
+        session.commit()

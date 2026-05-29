@@ -91,6 +91,12 @@ def process_grape_input(bottler: BottleHandler, grape_id: int) -> Tuple[Union[st
     if "-s" in search_partial:
         search_partial = search_partial.replace("-s", "").strip()
         search_results = search_wine_grapes_for_content(search_partial)
+        if len(search_results) == 0:
+            bottler.ui_manager.add_text_content(
+                f"\r\n\033[31mNo grape varieties found matching '{search_partial}'.\033[39m")
+            time.sleep(2)
+            return search_partial, None
+        search_results = sorted(search_results, key=lambda x: x.lower())
         bottler.ui_manager.add_text_content("\r\n")
         for i, name_found in enumerate(search_results):
             actual_name, _ = name_found.split(", id: ")

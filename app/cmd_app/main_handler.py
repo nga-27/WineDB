@@ -7,7 +7,7 @@ from terminal_ui_lite import TerminalUILite
 from app.cmd_app.utils.api import handle_get_payload
 from app.cmd_app.utils.constants import PrintColor
 from app.cmd_app.handlers import (
-    bottle_handler, grape_handler, view_handler, sync_handler, consume_handler
+    bottle_handler, sync_handler, consume_handler, move_bottle_handler
 )
 
 
@@ -19,16 +19,14 @@ OPTION_STATES = {
     "bottle": "bottle",
     "a": "bottle",
     "add": "bottle",
-    "g": "grape",
-    "grape": "grape",
-    "v": "view",
-    "view": "view",
     "q": "exit",
     "quit": "exit",
     "e": "exit",
     "exit": "exit",
     "s": "sync",
     "sync": "sync",
+    "m": "move",
+    "move": "move",
     "c": "consume", 
     "consume": "consume",
 }
@@ -43,9 +41,8 @@ def exit_handler(ui_manager: TerminalUILite) -> bool:
 ACTION_FUNCTIONS = {
     "bottle": bottle_handler,
     "consume": consume_handler,
-    "grape": grape_handler,
+    "move": move_bottle_handler,
     "sync": sync_handler,
-    "view": view_handler,
     "exit": exit_handler,
 }
 
@@ -65,9 +62,8 @@ def what_to_do_options(ui_manager: TerminalUILite) -> str:
 
         ui_manager.add_text_content(f"\t- ADD {PrintColor.MAGENTA}BOTTLES{PrintColor.NORMAL} (b or bottle, a or add)")
         ui_manager.add_text_content(f"\t- {PrintColor.RED}CONSUME{PrintColor.NORMAL} a bottle (c or consume)")
-        ui_manager.add_text_content(f"\t- Add {PrintColor.GREEN}GRAPE VARIETIES{PrintColor.NORMAL} (g or grape)")
-        ui_manager.add_text_content(f"\t- {PrintColor.BLUE}SYNC{PrintColor.NORMAL} with spreadsheet (s or sync)")
-        ui_manager.add_text_content(f"\t- {PrintColor.CYAN}VIEW WINE SUPPLY{PrintColor.NORMAL} (v or view)")
+        ui_manager.add_text_content(f"\t- {PrintColor.CYAN}MOVE{PrintColor.NORMAL} bottle from one location to another (m or move)")
+        ui_manager.add_text_content(f"\t- {PrintColor.GREEN}SYNC{PrintColor.NORMAL} with spreadsheet (s or sync)")
         ui_manager.add_text_content(f"\t- {PrintColor.YELLOW}EXIT{PrintColor.NORMAL} (e or exit, q or quit)")
         ui_manager.add_text_content("\r\n")
         ui_manager.add_input_content("\r\nSo... what would you like to do? ", __callback_function, input_timeout=120)

@@ -84,6 +84,29 @@ def handle_notes_appending(
     return consumed_obj[note_type] + "; " + new_notes
 
 
+def move_bottle_location(name: str, vintage: str, to_location_id: str) -> Tuple[bool, Union[None, str]]:
+    """ Placeholder function to move a bottle based on user input """
+    # For simplicity, we'll just decrease supply from current location and increase supply in new location
+    # In a real implementation, we would want to update the physical_location_id of the existing supply entry instead
+    if vintage:
+        results = requests.get(f"http://localhost:8282/wine_supplies?name={name}&vintage={vintage}")
+    else:
+        results = requests.get(f"http://localhost:8282/wine_supplies?name={name}")
+    supply = results.json()
+    if len(supply) == 0:
+        return False, f"No supply found for {name} ({vintage})."
+    if len(supply) > 1:
+        return False, f"Expected to find exactly one supply for {name} ({vintage}), but found {len(supply)}."
+    supply = supply[0]
+    response = requests.patch(f"http://localhost:8282/wine_supplies/move", params={
+        "bottle_id": supply["upc_vintage_sd_id"],
+        "new_location_id": to_location_id
+    })
+    if response.status_code != 200:
+        return False, f"Failed to move supply for {name} ({vintage}): {response.text}"
+    return True, None
+
+
 def decrease_bottle_supply(
         name: str, vintage: str, ratings: Union[str, None] = None,
         rating_notes: Union[str, None] = None, drank_date: Union[str, None] = None,

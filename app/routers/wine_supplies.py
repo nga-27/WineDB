@@ -153,6 +153,21 @@ def update_wine_supply_quantity(quantity_update: WineSupplyQuantityUpdate) -> st
     return "OK"
 
 
+@ROUTER.patch("/move", status_code=200)
+def move_wine_supply(bottle_id: str, new_location_id: str) -> str:
+    with Session(get_db_interface().engine) as session:
+        supply = session.get(WineSupply, bottle_id)
+        if not supply:
+            raise HTTPException(status_code=404, detail=f"No supply found with id {bottle_id}")
+        new_location = session.get(PhysicalLocation, new_location_id)
+        if not new_location:
+            raise HTTPException(status_code=404, detail=f"No physical location found with id {new_location_id}")
+        supply.physical_location = new_location
+        session.add(supply)
+        session.commit()
+    return "OK"
+
+
 @ROUTER.post("/", status_code=201)
 def create_wine_supply(wine_supply: WineSupplyCreate) -> str:
     logger = logging.getLogger(LOGGER_NAME)

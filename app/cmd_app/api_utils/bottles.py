@@ -93,6 +93,13 @@ def move_bottle_location(name: str, vintage: str, to_location_id: str) -> Tuple[
     else:
         results = requests.get(f"http://localhost:8282/wine_supplies?name={name}")
     supply = results.json()
+    results = requests.get("http://localhost:8282/locations")
+    consumed_location_id = "NOT-A-REAL-ID"
+    for location in results.json():
+        if location["name"] == "Consumed":
+            consumed_location_id = location["location_id"]
+            break
+    supply = [s for s in supply if s["physical_location_id"] != consumed_location_id]
     if len(supply) == 0:
         return False, f"No supply found for {name} ({vintage})."
     if len(supply) > 1:

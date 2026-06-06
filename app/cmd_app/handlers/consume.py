@@ -72,6 +72,7 @@ def process_name_input(bottler: BottleHandler) -> Tuple[str, str | None, bool]:
                 bottler.ui_manager.add_text_content(f"\r\nNo wine supply found matching UPC barcode '{name}'. Resetting.")
                 time.sleep(2)
                 return "", None, False
+            search_results.sort()
             for i, name in enumerate(search_results):
                 bottler.ui_manager.add_text_content(f"\t - [{i+1}] {name}")
             bottler.ui_manager.add_text_content("\r\n")
@@ -115,6 +116,7 @@ def process_name_input(bottler: BottleHandler) -> Tuple[str, str | None, bool]:
             time.sleep(2)
             return "", None, False
         bottler.ui_manager.add_text_content("\r\n")
+        search_results.sort()
         for i, name in enumerate(search_results):
             bottler.ui_manager.add_text_content(f"\t - [{i+1}] {name}")
         bottler.ui_manager.add_text_content("\r\n")

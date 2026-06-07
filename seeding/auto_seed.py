@@ -94,7 +94,7 @@ def auto_seed() -> bool:
     food_pairings = [
         {"name": "Red Meat", "description": "Steak, lamb, beef dishes."},
         {"name": "Poultry", "description": "Chicken, turkey."},
-        {"name": "Fish", "description": "Salmon, tuna, white fish."},
+        {"name": "Fish / Seafood", "description": "Salmon, tuna, white fish."},
         {"name": "Cheese", "description": "Hard and soft cheeses."},
         {"name": "Pasta", "description": "Italian dishes with tomato or cream sauces."},
         {"name": "Dessert", "description": "Sweet treats like chocolate or fruit."},

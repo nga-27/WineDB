@@ -143,6 +143,7 @@ def process_name_input(bottler: BottleHandler) -> Tuple[str, str | None, bool]:
                     else:
                         bottler.ui_manager.add_text_content(f"\r\n\033[31mSorry, something went wrong moving a bottle of {name} ({vintage}) to {location_name}.\033[39m")
                         bottler.ui_manager.add_text_content(f"\r\nError: {error_message}\r\n")
+                        time.sleep(5)
                     time.sleep(2)
         else:
             bottler.ui_manager.add_text_content(

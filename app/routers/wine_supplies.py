@@ -14,9 +14,7 @@ from app.db.database import (
     WineSupply,
     GrapeVariety,
     FoodPairing,
-    WineType,
-    Region,
-    Country,
+    GrapeVariety,
     PhysicalLocation,
 )
 
@@ -66,8 +64,8 @@ ROUTER = APIRouter(
 
 @ROUTER.get("/", status_code=200)
 def get_wine_supplies(name: str | None = None, vintage: str | None = None,
-                      by_barcode: bool = False) -> List[WineSupply]:
-    wine_supplies: List[WineSupply] = []
+                      by_barcode: bool = False) -> List[dict]:
+    result: List[dict] = []
     with Session(get_db_interface().engine) as session:
         stmt = select(WineSupply)
         if by_barcode and name:
@@ -78,7 +76,22 @@ def get_wine_supplies(name: str | None = None, vintage: str | None = None,
             if vintage:
                 stmt = stmt.where(WineSupply.vintage == vintage)
         wine_supplies = session.exec(stmt).all()
-    return wine_supplies
+
+        for supply in wine_supplies:
+            # Build a safe dict excluding relationship objects, then add grape ids
+            supply_dict = supply.model_dump(
+                exclude={
+                    "region", "country", "physical_location", "wine_type", "keywords",
+                    "food_pairings", "grapes"},
+                exclude_none=True)
+            supply_dict["grape_ids"] = [g.variety_id for g in supply.grapes] \
+                if supply.grapes else []
+            supply_dict["food_pairing_ids"] = [fp.pairing_id for fp in supply.food_pairings] \
+                if supply.food_pairings else []
+            supply_dict["keyword_ids"] = [k.keyword_id for k in supply.keywords] \
+                if supply.keywords else []
+            result.append(supply_dict)
+    return result
 
 
 @ROUTER.get("/joined", status_code=200)
@@ -163,6 +176,60 @@ def move_wine_supply(bottle_id: str, new_location_id: str) -> str:
         if not new_location:
             raise HTTPException(status_code=404, detail=f"No physical location found with id {new_location_id}")
         supply.physical_location = new_location
+        session.add(supply)
+        session.commit()
+    return "OK"
+
+
+@ROUTER.patch("/update_linked_grapes", status_code=200)
+def update_linked_grapes(bottle_id: str, grape_ids: List[str]) -> str:
+    with Session(get_db_interface().engine) as session:
+        supply = session.get(WineSupply, bottle_id)
+        if not supply:
+            raise HTTPException(status_code=404, detail=f"No supply found with id {bottle_id}")
+        # Load GrapeVariety rows matching the provided ids and replace relationships
+        if grape_ids:
+            grapes = list(set(grape_ids))  # Remove duplicates
+            grapes = session.exec(select(GrapeVariety).where(GrapeVariety.variety_id.in_(grape_ids))).all()
+        else:
+            grapes = []
+        supply.grapes = grapes
+        session.add(supply)
+        session.commit()
+    return "OK"
+
+
+@ROUTER.patch("/update_linked_food_pairings", status_code=200)
+def update_linked_food_pairings(bottle_id: str, food_pairing_ids: List[str]) -> str:
+    with Session(get_db_interface().engine) as session:
+        supply = session.get(WineSupply, bottle_id)
+        if not supply:
+            raise HTTPException(status_code=404, detail=f"No supply found with id {bottle_id}")
+        # Load FoodPairing rows matching the provided ids and replace relationships
+        if food_pairing_ids:
+            food_pairings = list(set(food_pairing_ids))  # Remove duplicates
+            food_pairings = session.exec(select(FoodPairing).where(FoodPairing.pairing_id.in_(food_pairing_ids))).all()
+        else:
+            food_pairings = []
+        supply.food_pairings = food_pairings
+        session.add(supply)
+        session.commit()
+    return "OK"
+
+
+@ROUTER.patch("/update_linked_keywords", status_code=200)
+def update_linked_keywords(bottle_id: str, keyword_ids: List[str]) -> str:
+    with Session(get_db_interface().engine) as session:
+        supply = session.get(WineSupply, bottle_id)
+        if not supply:
+            raise HTTPException(status_code=404, detail=f"No supply found with id {bottle_id}")
+        # Load Keywords rows matching the provided ids and replace relationships
+        if keyword_ids:
+            keywords = list(set(keyword_ids))  # Remove duplicates
+            keywords = session.exec(select(Keywords).where(Keywords.keyword_id.in_(keyword_ids))).all()
+        else:
+            keywords = []
+        supply.keywords = keywords
         session.add(supply)
         session.commit()
     return "OK"

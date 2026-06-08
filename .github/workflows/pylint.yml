@@ -1,14 +1,6 @@
 name: Pylint
 
-on:
-    workflow_call:
-        inputs:
-            target_branch:
-                required: true
-                type: string
-        outputs:
-            build_status:
-                value: ${{ jobs.build.outputs.status }}
+on: [push]
 
 jobs:
     build:

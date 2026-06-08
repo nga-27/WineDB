@@ -21,6 +21,6 @@ def view_handler(ui_manager: TerminalUILite) -> bool:
         bottler.ui_manager.add_text_content("Current supply:\r\n")
         for supply in supply_content:
             bottler.ui_manager.add_text_content(f"\t- {supply}")
-        bottler.ui_manager.add_text_content(f"\r\n\r\n")
+        bottler.ui_manager.add_text_content("\r\n\r\n")
         bottler.handle_input("Press enter to continue...", none_on_skip=True)
     return True

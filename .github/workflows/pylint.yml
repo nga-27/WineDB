@@ -29,10 +29,12 @@ jobs:
                 pylint $(git ls-files 'app/*.py')
                 pylint $(git ls-files 'app/cmd_app/*.py')
                 pylint $(git ls-files 'app/cmd_app/api_utils/*.py')
-                # pylint $(git ls-files 'app/db/*.py')
-                # pylint $(git ls-files 'app/routers/*.py')
-                # pylint $(git ls-files 'app/spreadsheet/*.py')
-                # pylint $(git ls-files 'app/spreadsheet/tabs/*.py')
+                pylint $(git ls-files 'app/cmd_app/handlers/*.py')
+                pylint $(git ls-files 'app/cmd_app/utils/*.py')
+                pylint $(git ls-files 'app/db/*.py')
+                pylint $(git ls-files 'app/routers/*.py')
+                pylint $(git ls-files 'app/spreadsheet/*.py')
+                pylint $(git ls-files 'app/spreadsheet/tabs/*.py')
 
             - name: set-output
               id: status_value

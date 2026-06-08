@@ -1,3 +1,4 @@
+""" Handle bottle consumption """
 import time
 from typing import Tuple, Union
 import datetime
@@ -9,6 +10,8 @@ from app.cmd_app.api_utils.bottles import (
 )
 from .utils import BottleHandler
 from .bottles import process_vintage_input
+
+# pylint: disable=line-too-long, too-many-locals, too-many-branches, too-many-statements, too-many-nested-blocks
 
 
 def consume_handler(ui_manager: TerminalUILite) -> bool:
@@ -53,7 +56,7 @@ def process_consumption_input_data(ui_manager: TerminalUILite) -> None:
     if alt_name is not None:
         name = alt_name
     bottler.ui_manager.clear_content()
-    time.sleep(0.5)  
+    time.sleep(0.5)
 
 
 def process_name_input(bottler: BottleHandler) -> Tuple[str, str | None, bool]:
@@ -102,7 +105,7 @@ def process_name_input(bottler: BottleHandler) -> Tuple[str, str | None, bool]:
                             bottler.ui_manager.add_text_content(f"\r\nError: {error_message}\r\n")
                             time.sleep(5)
                         time.sleep(2)
-                
+
             else:
                 bottler.ui_manager.add_text_content(
                     f"\r\n\033[33mCouldn't find a bottle to consume named '{name_and_vintage}'\033[39m")

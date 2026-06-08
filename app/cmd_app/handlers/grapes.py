@@ -10,6 +10,8 @@ from app.cmd_app.api_utils.regions import search_regions_for_content
 from .generic import process_linking_input
 from .utils import BottleHandler
 
+# pylint: disable=line-too-long
+
 
 def grape_handler(ui_manager: TerminalUILite) -> bool:
     """ Handles adding grape varieties """
@@ -17,6 +19,7 @@ def grape_handler(ui_manager: TerminalUILite) -> bool:
     time.sleep(1)
     bottler = BottleHandler(ui_manager)
     grape_name, grape_id = process_grape_input(bottler, 0)
+    was_successful = True
     if grape_name is None:
         ui_manager.add_text_content("\r\nNo grape variety added.")
         time.sleep(1)
@@ -105,13 +108,13 @@ def process_grape_input(bottler: BottleHandler, grape_id: int) -> Tuple[Union[st
         time.sleep(0.5)
 
         generic = bottler.handle_input(
-            f"Pick one of these or enter a new name? (type number or 'enter' to start a new grape variety) ")
+            "Pick one of these or enter a new name? (type number or 'enter' to start a new grape variety) ")
         if generic.isdigit() and 1 <= int(generic) <= len(search_results):
             name = search_results[int(generic)-1]
             split_name, split_id = name.split(", id: ")
             return split_name.strip(), split_id.strip()
         search_partial = generic.strip()
-        
+
     bottler.ui_manager.add_text_content(
         f"\r\nWe'll start a new grape variety entry for '{search_partial}'")
     name = search_partial

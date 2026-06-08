@@ -1,3 +1,4 @@
+""" Handlers for wine types """
 import time
 from typing import Union, Tuple
 

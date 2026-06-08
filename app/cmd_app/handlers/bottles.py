@@ -22,6 +22,8 @@ from .locations import process_wine_location_creation
 from .grapes import process_grape_variety_input
 from .utils import BottleHandler
 
+# pylint: disable=line-too-long, too-many-locals, too-many-branches, too-many-statements, too-many-nested-blocks
+
 
 def bottle_handler(ui_manager: TerminalUILite) -> bool:
     """ Handles adding bottles """
@@ -143,7 +145,7 @@ def process_vintage_input(bottler: BottleHandler, name: str, vintage: str | None
             return None, True, None
         if vintage is not None and len(vintage.strip()) > 0 and not vintage.strip().isdigit():
             bottler.ui_manager.add_text_content(
-                f"\r\n\033[31mInvalid vintage (year). Resetting.\033[39m")
+                "\r\n\033[31mInvalid vintage (year). Resetting.\033[39m")
             time.sleep(2)
             return None, False, None
 
@@ -164,12 +166,11 @@ def process_vintage_input(bottler: BottleHandler, name: str, vintage: str | None
                             bottler.ui_manager.add_text_content(f"\r\nError: {error_message}\r\n")
                         time.sleep(2)
                         return None, False, None
-                    else:
-                        bottler.ui_manager.add_text_content(
-                            f"\r\nWe'll start a new bottle entry for '{name} ({vintage})'")
-                        time.sleep(2)
-                        uuid_str = str(uuid.uuid4())[:8]
-                        alt_name = f"{name} -- {uuid_str}"
+                    bottler.ui_manager.add_text_content(
+                        f"\r\nWe'll start a new bottle entry for '{name} ({vintage})'")
+                    time.sleep(2)
+                    uuid_str = str(uuid.uuid4())[:8]
+                    alt_name = f"{name} -- {uuid_str}"
     return vintage, True, alt_name
 
 
@@ -193,7 +194,7 @@ def process_bottle_input_data(ui_manager: TerminalUILite) -> None:
     if alt_name is not None:
         name = alt_name
     bottler.ui_manager.clear_content()
-    time.sleep(0.5)        
+    time.sleep(0.5)
 
     winery = bottler.handle_input("\r\nWhich vendor/winery produced it? ")
     barcode = bottler.handle_input("\r\nWhat's the UPC barcode (hit 'enter' to skip)? ", none_on_skip=True)
@@ -246,7 +247,7 @@ def process_bottle_input_data(ui_manager: TerminalUILite) -> None:
 
     # ADD RELATIONSHIPS!!!
 
-    ui_manager.add_text_content(f"\r\nGreat! You entered:\r\n")
+    ui_manager.add_text_content("\r\nGreat! You entered:\r\n")
     ui_manager.add_text_content(f"\tName: {name}")
     ui_manager.add_text_content(f"\tVintage: {vintage if vintage is not None else '--'}")
     ui_manager.add_text_content(f"\tWinery: {winery if winery is not None else '--'}")

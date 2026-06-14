@@ -30,18 +30,18 @@ def generate_by_food_pairing_tab(wine_supplies: List[WineSupply]) -> List[dict]:
             tab_data.append({
                 "Name": wine.name,
                 "Vineyard": wine.vendor if wine.vendor else "Unknown",
-                "Type": wine.wine_type.name if wine.wine_type else "Unknown",
-                "Grapes": ", ".join([grape.name for grape in wine.grapes]) if wine.grapes else "Unknown",
                 "Vintage": wine.vintage,
+                "Type": wine.wine_type.name if wine.wine_type else "Unknown",
+                "Location": wine.physical_location.name if wine.physical_location else "Unknown",
+                "Grapes": ", ".join([grape.name for grape in wine.grapes]) if wine.grapes else "Unknown",
                 "Region": wine.region.name if wine.region else "Unknown",
                 "Country": wine.country.name if wine.country else "Unknown",
                 "PCT": wine.pct_alcohol if wine.pct_alcohol else "Unknown",
                 "Quantity": wine.quantity if wine.quantity else "Unknown",
-                "Obtainment Note": wine.obtainment_note if wine.obtainment_note else "None",
-                "Location": wine.physical_location.name if wine.physical_location else "Unknown",
+                "Obtainment Note": wine.obtainment_note if wine.obtainment_note else "",
                 "Drink By Date": wine.drink_by_date if wine.drink_by_date else "Unknown",
                 "Keywords": ", ".join([keyword.keyword for keyword in wine.keywords]) if wine.keywords else "n/a",
-                "Tasting Notes": wine.tasting_notes if wine.tasting_notes else "None",
+                "Tasting Notes": wine.tasting_notes if wine.tasting_notes else "",
             })
 
     return tab_data

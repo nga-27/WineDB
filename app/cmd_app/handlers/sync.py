@@ -10,6 +10,7 @@ import shutil
 import pandas as pd
 import requests
 from openpyxl.styles import Font
+from openpyxl.utils import get_column_letter
 from terminal_ui_lite import TerminalUILite
 
 from app.logging_config import LOGGER_NAME
@@ -187,11 +188,18 @@ def sync_handler(ui_manager: TerminalUILite) -> bool:
                 max_length = len(str(column))  # Start with column header length
                 for row_idx in range(2, sheet.max_row + 1):
                     cell_value = sheet.cell(row=row_idx, column=col_idx).value
-                    if cell_value:
-                        max_length = max(max_length, len(str(cell_value)))
-                # Set column width with 2-char padding for readability
-                sheet.column_dimensions[sheet.cell(row=1, column=col_idx).column_letter].width = \
-                    max_length + 2
+                    if cell_value is None:
+                        continue
+                    # Replace tabs with spaces and trim
+                    cell_str = str(cell_value).replace('\t', '    ').strip()
+                    # Consider multi-line cells: use the longest line length
+                    lines = cell_str.splitlines() or [cell_str]
+                    longest_line = max((len(line.strip()) for line in lines), default=0)
+                    max_length = max(max_length, longest_line)
+                # Set column width with 2-char padding for readability and clamp to a max
+                width = max_length + 2
+                col_letter = get_column_letter(col_idx)
+                sheet.column_dimensions[col_letter].width = width
 
             ui_manager.add_text_content(
                 f"\033[32m'{tab_name}' tab generated with {len(tab_data)} records.\033[39m")

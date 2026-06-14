@@ -27,23 +27,23 @@ def generate_by_grape_variety_tab(wine_supplies: List[WineSupply],
     # Create tab data structure
     tab_data: List[dict] = []
     for variety_name, obj_data in variety_map.items():
-        tab_data.append({"Name": " "})  # Add a separator row
-        tab_data.append({"Name": variety_name, "Vineyard": obj_data["description"]})  # Add a header row for the grape variety
+        tab_data.append({"Type": " "})  # Add a separator row
+        tab_data.append({"Type": variety_name, "Name": obj_data["description"]})  # Add a header row for the grape variety
         for wine in obj_data["wines"]:
             tab_data.append({
+                "Type": wine.wine_type.name if wine.wine_type else "Unknown",
                 "Name": wine.name,
                 "Vineyard": wine.vendor if wine.vendor else "Unknown",
-                "Type": wine.wine_type.name if wine.wine_type else "Unknown",
                 "Vintage": wine.vintage,
+                "Location": wine.physical_location.name if wine.physical_location else "Unknown",
                 "Region": wine.region.name if wine.region else "Unknown",
                 "Country": wine.country.name if wine.country else "Unknown",
                 "PCT": wine.pct_alcohol if wine.pct_alcohol else "Unknown",
                 "Quantity": wine.quantity if wine.quantity else "Unknown",
-                "Obtainment Note": wine.obtainment_note if wine.obtainment_note else "None",
-                "Location": wine.physical_location.name if wine.physical_location else "Unknown",
+                "Obtainment Note": wine.obtainment_note if wine.obtainment_note else "",
                 "Drink By Date": wine.drink_by_date if wine.drink_by_date else "Unknown",
                 "Keywords": ", ".join([keyword.keyword for keyword in wine.keywords]) if wine.keywords else "n/a",
-                "Tasting Notes": wine.tasting_notes if wine.tasting_notes else "None",
+                "Tasting Notes": wine.tasting_notes if wine.tasting_notes else "",
                 "Food Pairings": ", ".join([pairing.name for pairing in wine.food_pairings]) \
                     if wine.food_pairings else "n/a",
             })

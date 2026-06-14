@@ -28,7 +28,8 @@ def search_supply_for_content(name: str | None = None, vintage: str | None = Non
                 QTY: {result["quantity"]}' for result in results_filtered]
         return result_names
     if by_barcode:
-        results = requests.get(f"http://localhost:8282/wine_supplies?name={name}&by_barcode=true", timeout=5)
+        results = requests.get(
+            f"http://localhost:8282/wine_supplies?name={name}&by_barcode=true", timeout=5)
         results_filtered = [
             result for result in results.json() \
                 if result["physical_location_id"] != consumed_location_id]
@@ -36,7 +37,8 @@ def search_supply_for_content(name: str | None = None, vintage: str | None = Non
             f'{result["name"]} ({result["vintage"]})' for result in results_filtered]
         return result_names
     if vintage:
-        results = requests.get(f"http://localhost:8282/wine_supplies?name={name}&vintage={vintage}", timeout=5)
+        results = requests.get(
+            f"http://localhost:8282/wine_supplies?name={name}&vintage={vintage}", timeout=5)
     else:
         results = requests.get(f"http://localhost:8282/wine_supplies?name={name}", timeout=5)
     results_filtered = [
@@ -49,7 +51,8 @@ def search_supply_for_content(name: str | None = None, vintage: str | None = Non
 def increase_bottle_supply(name: str, vintage: str) -> Tuple[bool, Union[None, str]]:
     """ Placeholder function to increase bottle supply based on user input """
     if vintage:
-        results = requests.get(f"http://localhost:8282/wine_supplies?name={name}&vintage={vintage}", timeout=5)
+        results = requests.get(
+            f"http://localhost:8282/wine_supplies?name={name}&vintage={vintage}", timeout=5)
     else:
         results = requests.get(f"http://localhost:8282/wine_supplies?name={name}", timeout=5)
     if len(results.json()) != 1:
@@ -85,14 +88,27 @@ def handle_ratings_averaging(
 
 
 def handle_notes_appending(
-        consumed_obj: dict, new_notes: Union[str, None], note_type: str
+        consumed_obj: dict, new_notes: Union[str, None], note_type: str,
+        max_num_items: Union[int, None] = None
         ) -> Union[str, None]:
     """ Handle appending of notes when consuming a bottle that has already been consumed before """
     if new_notes is None:
         return consumed_obj[note_type]
     if consumed_obj[note_type] is None:
         return new_notes
-    return consumed_obj[note_type] + "; " + new_notes
+    consumed_obj[note_type] += "; " + new_notes
+    if max_num_items is None:
+        return consumed_obj[note_type]
+    max_num_items = max(max_num_items, 2)  # Ensure at least 2 items to allow for "first" and "new"
+    existing_notes = [n.strip() for n in consumed_obj[note_type].split(";") if len(n.strip()) > 0]
+    if len(existing_notes) > max_num_items:
+        # Keep the first, add the new one (last), and shift the middle ones, while ensuring we don't
+        # exceed max_num_items
+        middle_list = existing_notes[1:] if max_num_items > 2 else []
+        middle_list.pop(0, None)
+        existing_notes = [existing_notes[0]] + middle_list
+        return '; '.join(existing_notes)
+    return consumed_obj[note_type]
 
 
 def move_bottle_location(
@@ -102,7 +118,8 @@ def move_bottle_location(
     # new location. In a real implementation, we would want to update the physical_location_id
     # of the existing supply entry instead
     if vintage:
-        results = requests.get(f"http://localhost:8282/wine_supplies?name={name}&vintage={vintage}", timeout=5)
+        results = requests.get(
+            f"http://localhost:8282/wine_supplies?name={name}&vintage={vintage}", timeout=5)
     else:
         results = requests.get(f"http://localhost:8282/wine_supplies?name={name}", timeout=5)
     supply = results.json()
@@ -135,7 +152,8 @@ def decrease_bottle_supply(
         ) -> Tuple[bool, Union[None, str]]:
     """ Placeholder function to decrease bottle supply based on user input """
     if vintage:
-        results = requests.get(f"http://localhost:8282/wine_supplies?name={name}&vintage={vintage}", timeout=5)
+        results = requests.get(
+            f"http://localhost:8282/wine_supplies?name={name}&vintage={vintage}", timeout=5)
     else:
         results = requests.get(f"http://localhost:8282/wine_supplies?name={name}", timeout=5)
     supply = results.json()

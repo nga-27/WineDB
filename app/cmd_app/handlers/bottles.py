@@ -86,6 +86,10 @@ def process_name_input(bottler: BottleHandler) -> Tuple[str, str | None, bool]:
                     f"\r\nWe'll start a new bottle entry for '{name_and_vintage}'")
                 name = name_and_vintage
                 time.sleep(2)
+    elif "-q" in name:
+        bottler.ui_manager.add_text_content("\r\nCanceling operation, returning to main menu.")
+        time.sleep(2)
+        return "", None, False
     elif "-s" in name:
         search_partial = name.replace("-s", "").strip()
         search_results = search_supply_for_content(search_partial)
@@ -100,7 +104,12 @@ def process_name_input(bottler: BottleHandler) -> Tuple[str, str | None, bool]:
         bottler.ui_manager.add_text_content("\r\n")
         time.sleep(0.5)
 
-        name_and_vintage = bottler.handle_input("Pick one of these or enter a new name? (type number) ")
+        name_and_vintage = bottler.handle_input(
+            "Pick one of these or enter a new name? (type number or -q to quit) ")
+        if name_and_vintage == "-q":
+            bottler.ui_manager.add_text_content("\r\nCanceling operation, returning to main menu.")
+            time.sleep(2)
+            return "", None, False
         if name_and_vintage.isdigit() and 1 <= int(name_and_vintage) <= len(search_results):
             name_and_vintage = search_results[int(name_and_vintage)-1]
             name = name_and_vintage.split(" (")[0]

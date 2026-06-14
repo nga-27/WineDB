@@ -178,6 +178,7 @@ def decrease_bottle_supply(
         to_consume["physical_location_id"] = consumed_id
         to_consume["quantity"] = 1
         to_consume["upc_vintage_sd_id"] = None  # Ensure a new entry is created
+        to_consume["drank_rating"] = None
         ratings, ratings_raw = handle_ratings_averaging(to_consume, ratings)
         to_consume["drank_rating"] = ratings
         to_consume["drank_rating_raw"] = ratings_raw

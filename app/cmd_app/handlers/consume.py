@@ -1,3 +1,4 @@
+""" Handle bottle consumption """
 import time
 from typing import Tuple, Union
 import datetime
@@ -9,6 +10,8 @@ from app.cmd_app.api_utils.bottles import (
 )
 from .utils import BottleHandler
 from .bottles import process_vintage_input
+
+# pylint: disable=line-too-long, too-many-locals, too-many-branches, too-many-statements, too-many-nested-blocks
 
 
 def consume_handler(ui_manager: TerminalUILite) -> bool:
@@ -53,7 +56,7 @@ def process_consumption_input_data(ui_manager: TerminalUILite) -> None:
     if alt_name is not None:
         name = alt_name
     bottler.ui_manager.clear_content()
-    time.sleep(0.5)  
+    time.sleep(0.5)
 
 
 def process_name_input(bottler: BottleHandler) -> Tuple[str, str | None, bool]:
@@ -91,6 +94,7 @@ def process_name_input(bottler: BottleHandler) -> Tuple[str, str | None, bool]:
                     vintage_response = bottler.handle_input("Should we consume this bottle from the supply? [Y/n] ")
                     if vintage_response is not None and \
                         (len(vintage_response) == 0 or vintage_response.lower() in ["y", "yes"]):
+                        bottler.ui_manager.clear_content()
                         rating, rating_notes, drank_date, drank_date_event = process_consumed_evaluation(bottler)
                         was_successful, error_message = decrease_bottle_supply(
                             name, vintage, rating, rating_notes, drank_date, drank_date_event)
@@ -102,12 +106,16 @@ def process_name_input(bottler: BottleHandler) -> Tuple[str, str | None, bool]:
                             bottler.ui_manager.add_text_content(f"\r\nError: {error_message}\r\n")
                             time.sleep(5)
                         time.sleep(2)
-                
+
             else:
                 bottler.ui_manager.add_text_content(
                     f"\r\n\033[33mCouldn't find a bottle to consume named '{name_and_vintage}'\033[39m")
                 name = name_and_vintage
                 time.sleep(2)
+    elif "-q" in name:
+        bottler.ui_manager.add_text_content("\r\nCanceling operation, returning to main menu.")
+        time.sleep(2)
+        return "", None, False
     elif "-s" in name:
         search_partial = name.replace("-s", "").strip()
         search_results = search_supply_for_content(search_partial)
@@ -122,7 +130,12 @@ def process_name_input(bottler: BottleHandler) -> Tuple[str, str | None, bool]:
         bottler.ui_manager.add_text_content("\r\n")
         time.sleep(0.5)
 
-        name_and_vintage = bottler.handle_input("Pick one of these or enter a new name? (type number) ")
+        name_and_vintage = bottler.handle_input(
+            "Pick one of these or enter a new name? (type number or -q to quit) ")
+        if name_and_vintage == "-q":
+            bottler.ui_manager.add_text_content("\r\nCanceling operation, returning to main menu.")
+            time.sleep(2)
+            return "", None, False
         if name_and_vintage.isdigit() and 1 <= int(name_and_vintage) <= len(search_results):
             name_and_vintage = search_results[int(name_and_vintage)-1]
             name = name_and_vintage.split(" (")[0]
@@ -135,6 +148,7 @@ def process_name_input(bottler: BottleHandler) -> Tuple[str, str | None, bool]:
                 vintage_response = bottler.handle_input("Should we consume this bottle from the supply? [Y/n] ")
                 if vintage_response is not None and \
                     (len(vintage_response) == 0 or vintage_response.lower() in ["y", "yes"]):
+                    bottler.ui_manager.clear_content()
                     rating, rating_notes, drank_date, drank_date_event = process_consumed_evaluation(bottler)
                     was_successful, error_message = decrease_bottle_supply(
                         name, vintage, rating, rating_notes, drank_date, drank_date_event)

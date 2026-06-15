@@ -2,8 +2,12 @@
 import time
 from typing import Union, Tuple, List
 
-from app.cmd_app.api_utils.food_pairings import search_food_pairings_for_content, create_food_pairing
+from app.cmd_app.api_utils.food_pairings import (
+    search_food_pairings_for_content, create_food_pairing
+)
 from .utils import BottleHandler
+
+# pylint: disable=line-too-long
 
 
 def process_food_pairing_adding_input(bottler: BottleHandler) -> Tuple[List[str], List[str]]:
@@ -35,7 +39,8 @@ def process_food_pairing_adding_input(bottler: BottleHandler) -> Tuple[List[str]
             continue
         if food_pairing_name is not None and food_pairing_id is None:
             # If we have a name but no ID, we need to create a new food pairing entry
-            new_food_pairing_id, was_successful = create_food_pairing_entry(food_pairing_name, bottler)
+            new_food_pairing_id, was_successful = create_food_pairing_entry(
+                food_pairing_name, bottler)
             if was_successful:
                 food_pairing_id = new_food_pairing_id
             else:
@@ -50,7 +55,9 @@ def process_food_pairing_adding_input(bottler: BottleHandler) -> Tuple[List[str]
     return food_pairing_names, food_pairing_ids
 
 
-def process_food_pairing_input(bottler: BottleHandler, food_pairing_list_id: int) -> Tuple[Union[str, None], Union[str, None]]:
+def process_food_pairing_input(
+        bottler: BottleHandler, food_pairing_list_id: int
+        ) -> Tuple[Union[str, None], Union[str, None]]:
     """ Prompts user for countries and processes it, including searching and supply increase options
     
     Returns:
@@ -86,13 +93,13 @@ def process_food_pairing_input(bottler: BottleHandler, food_pairing_list_id: int
         time.sleep(0.5)
 
         generic = bottler.handle_input(
-            f"Pick one of these or enter a new name? (type number or 'enter' to start a new keyword) ")
+            "Pick one of these or enter a new name? (type number or 'enter' to start a new keyword) ")
         if generic.isdigit() and 1 <= int(generic) <= len(search_results):
             name = search_results[int(generic)-1]
             split_name, split_id = name.split(", id: ")
             return split_name.strip(), split_id.strip()
         search_partial = generic.strip()
-        
+
     bottler.ui_manager.add_text_content(
         f"\r\nWe'll start a new keyword entry for '{search_partial}'")
     name = search_partial

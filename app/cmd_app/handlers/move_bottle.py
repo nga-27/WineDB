@@ -10,7 +10,8 @@ from app.cmd_app.api_utils.bottles import (
 from app.cmd_app.api_utils.locations import search_wine_locations_for_content
 from .utils import BottleHandler
 from .generic import process_linking_input
-from .bottles import process_vintage_input
+
+# pylint: disable=line-too-long,too-many-nested-blocks,too-many-branches,too-many-statements
 
 
 def move_bottle_handler(ui_manager: TerminalUILite) -> bool:
@@ -61,7 +62,8 @@ def process_name_input(bottler: BottleHandler) -> Tuple[str, str | None, bool]:
             name = name.strip()
             search_results = search_supply_for_content(name=name, by_barcode=True)
             if len(search_results) == 0:
-                bottler.ui_manager.add_text_content(f"\r\nNo wine supply found matching UPC barcode '{name}'. Resetting.")
+                bottler.ui_manager.add_text_content(
+                    f"\r\nNo wine supply found matching UPC barcode '{name}'. Resetting.")
                 time.sleep(2)
                 return "", None, False
             for i, name in enumerate(search_results):
@@ -69,7 +71,8 @@ def process_name_input(bottler: BottleHandler) -> Tuple[str, str | None, bool]:
             bottler.ui_manager.add_text_content("\r\n")
             time.sleep(0.5)
 
-            name_and_vintage = bottler.handle_input("Pick one of these or enter a new name? (type number) ")
+            name_and_vintage = bottler.handle_input(
+                "Pick one of these or enter a new name? (type number) ")
             if name_and_vintage.isdigit() and 1 <= int(name_and_vintage) <= len(search_results):
                 name_and_vintage = search_results[int(name_and_vintage)-1]
                 name = name_and_vintage.split(" (")[0]
@@ -79,13 +82,15 @@ def process_name_input(bottler: BottleHandler) -> Tuple[str, str | None, bool]:
                     (len(vintage_response) > 0 and vintage_response.lower() in ["n", "no"]):
                     vintage = None
                 if vintage is not None:
-                    vintage_response = bottler.handle_input("Should we move this bottle to a different location? [Y/n] ")
+                    vintage_response = bottler.handle_input(
+                        "Should we move this bottle to a different location? [Y/n] ")
                     if vintage_response is not None and \
                         (len(vintage_response) == 0 or vintage_response.lower() in ["y", "yes"]):
                         location_name, location_id = process_linking_input(
                             bottler, "physical location", search_wine_locations_for_content)
                         if location_name == "Consumed":
-                            bottler.ui_manager.add_text_content(f"\r\n\033[31mSorry, you can't move a bottle to the 'Consumed' location. Please choose a different location.\033[39m")
+                            bottler.ui_manager.add_text_content(
+                                "\r\n\033[31mSorry, you can't move a bottle to the 'Consumed' location. Please choose a different location.\033[39m")
                             time.sleep(2)
                             return name, vintage, needs_entry
                         was_successful, error_message = move_bottle_location(name, vintage, location_id)
@@ -93,21 +98,27 @@ def process_name_input(bottler: BottleHandler) -> Tuple[str, str | None, bool]:
                             bottler.ui_manager.add_text_content(f"\r\n\033[32mMoved a bottle of {name} ({vintage}) to {location_name}!\033[39m")
                             needs_entry = False
                         else:
-                            bottler.ui_manager.add_text_content(f"\r\n\033[31mSorry, something went wrong moving a bottle of {name} ({vintage}) to {location_name}.\033[39m")
+                            bottler.ui_manager.add_text_content(
+                                f"\r\n\033[31mSorry, something went wrong moving a bottle of {name} ({vintage}) to {location_name}.\033[39m")
                             bottler.ui_manager.add_text_content(f"\r\nError: {error_message}\r\n")
                             time.sleep(5)
                         time.sleep(2)
-                
+
             else:
                 bottler.ui_manager.add_text_content(
                     f"\r\n\033[33mCouldn't find a bottle to move named '{name_and_vintage}'\033[39m")
                 name = name_and_vintage
                 time.sleep(2)
+    elif "-q" in name:
+        bottler.ui_manager.add_text_content("\r\nCanceling operation, returning to main menu.")
+        time.sleep(2)
+        return "", None, False
     elif "-s" in name:
         search_partial = name.replace("-s", "").strip()
         search_results = search_supply_for_content(search_partial)
         if len(search_results) == 0:
-            bottler.ui_manager.add_text_content(f"\r\nNo wine supply found matching '{search_partial}'. Resetting.")
+            bottler.ui_manager.add_text_content(
+                f"\r\nNo wine supply found matching '{search_partial}'. Resetting.")
             time.sleep(2)
             return "", None, False
         search_results = sorted(search_results, key=lambda x: x.lower())
@@ -117,7 +128,12 @@ def process_name_input(bottler: BottleHandler) -> Tuple[str, str | None, bool]:
         bottler.ui_manager.add_text_content("\r\n")
         time.sleep(0.5)
 
-        name_and_vintage = bottler.handle_input("Pick one of these or enter a new name? (type number) ")
+        name_and_vintage = bottler.handle_input(
+            "Pick one of these or enter a new name? (type number or -q to quit) ")
+        if name_and_vintage == "-q":
+            bottler.ui_manager.add_text_content("\r\nCanceling operation, returning to main menu.")
+            time.sleep(2)
+            return "", None, False
         if name_and_vintage.isdigit() and 1 <= int(name_and_vintage) <= len(search_results):
             name_and_vintage = search_results[int(name_and_vintage)-1]
             name = name_and_vintage.split(" (")[0]
@@ -127,21 +143,25 @@ def process_name_input(bottler: BottleHandler) -> Tuple[str, str | None, bool]:
                 (len(vintage_response) > 0 and vintage_response.lower() in ["n", "no"]):
                 vintage = None
             if vintage is not None:
-                vintage_response = bottler.handle_input("Should we move this bottle to a different location? [Y/n] ")
+                vintage_response = bottler.handle_input(
+                    "Should we move this bottle to a different location? [Y/n] ")
                 if vintage_response is not None and \
                     (len(vintage_response) == 0 or vintage_response.lower() in ["y", "yes"]):
                     location_name, location_id = process_linking_input(
                             bottler, "physical location", search_wine_locations_for_content)
                     if location_name == "Consumed":
-                        bottler.ui_manager.add_text_content(f"\r\n\033[31mSorry, you can't move a bottle to the 'Consumed' location. Please choose a different location.\033[39m")
+                        bottler.ui_manager.add_text_content(
+                            "\r\n\033[31mSorry, you can't move a bottle to the 'Consumed' location. Please choose a different location.\033[39m")
                         time.sleep(2)
                         return name, vintage, needs_entry
                     was_successful, error_message = move_bottle_location(name, vintage, location_id)
                     if was_successful:
-                        bottler.ui_manager.add_text_content(f"\r\n\033[32mMoved a bottle of {name} ({vintage}) to {location_name}!\033[39m")
+                        bottler.ui_manager.add_text_content(
+                            f"\r\n\033[32mMoved a bottle of {name} ({vintage}) to {location_name}!\033[39m")
                         needs_entry = False
                     else:
-                        bottler.ui_manager.add_text_content(f"\r\n\033[31mSorry, something went wrong moving a bottle of {name} ({vintage}) to {location_name}.\033[39m")
+                        bottler.ui_manager.add_text_content(
+                            f"\r\n\033[31mSorry, something went wrong moving a bottle of {name} ({vintage}) to {location_name}.\033[39m")
                         bottler.ui_manager.add_text_content(f"\r\nError: {error_message}\r\n")
                         time.sleep(5)
                     time.sleep(2)

@@ -1,3 +1,4 @@
+""" Logging configuration for WineDB API """
 import logging.config
 from pathlib import Path
 
@@ -60,4 +61,5 @@ LOGGING_CONFIG = {
 
 
 def configure_logging() -> None:
+    """ Configure logging for the application """
     logging.config.dictConfig(LOGGING_CONFIG)

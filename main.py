@@ -1,4 +1,4 @@
-import os
+""" Primary entry point for the WineDB application """
 import threading
 import time
 
@@ -17,6 +17,7 @@ BASE_URL = "http://localhost:8282"
 BASE_PORT = 8282
 
 def run_api():
+    """ Run the FastAPI application """
     uvicorn.run(
         "app.app:app",
         host="127.0.0.1",
@@ -35,6 +36,7 @@ def run_cmd_prompts():
 
 
 def run_app():
+    """ Run the WineDB application """
     db_interface = get_db_interface()
     db_interface.create_db_and_tables()
 

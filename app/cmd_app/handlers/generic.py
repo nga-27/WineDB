@@ -1,8 +1,10 @@
+""" Generic handler functions for linking models like countries, regions, etc."""
 import time
 from typing import Union, Tuple
 
-from app.cmd_app.api_utils.regions import search_regions_for_content
 from .utils import BottleHandler
+
+# pylint: disable=line-too-long
 
 
 def process_linking_input(bottler: BottleHandler, model: str,
@@ -51,7 +53,7 @@ def process_linking_input(bottler: BottleHandler, model: str,
             split_name, split_id = name.split(", id: ")
             return split_name.strip(), split_id.strip()
         search_partial = generic.strip()
-        
+
     bottler.ui_manager.add_text_content(
         f"\r\nWe'll start a new {model} entry for '{search_partial}'")
     name = search_partial

@@ -1,3 +1,4 @@
+""" Handler for countries """
 import time
 from typing import Union, Tuple
 

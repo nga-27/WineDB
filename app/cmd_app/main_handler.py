@@ -10,6 +10,8 @@ from app.cmd_app.handlers import (
     bottle_handler, sync_handler, consume_handler, move_bottle_handler
 )
 
+# pylint: disable=global-statement
+
 
 DEFAULT_CALLBACK_DATA = "ASDFAKSDLJ;FASDFLKJHASDLFKjBNALSKJDfH"
 CALLBACK_DATA = DEFAULT_CALLBACK_DATA
@@ -60,13 +62,19 @@ def what_to_do_options(ui_manager: TerminalUILite) -> str:
         time.sleep(0.5)
         ui_manager.add_text_content("What would you like to do? Options include:\r\n\r\n")
 
-        ui_manager.add_text_content(f"\t- ADD {PrintColor.MAGENTA}BOTTLES{PrintColor.NORMAL} (b or bottle, a or add)")
-        ui_manager.add_text_content(f"\t- {PrintColor.RED}CONSUME{PrintColor.NORMAL} a bottle (c or consume)")
-        ui_manager.add_text_content(f"\t- {PrintColor.CYAN}MOVE{PrintColor.NORMAL} bottle from one location to another (m or move)")
-        ui_manager.add_text_content(f"\t- {PrintColor.GREEN}SYNC{PrintColor.NORMAL} with spreadsheet (s or sync)")
-        ui_manager.add_text_content(f"\t- {PrintColor.YELLOW}EXIT{PrintColor.NORMAL} (e or exit, q or quit)")
+        ui_manager.add_text_content(
+            f"\t- ADD {PrintColor.MAGENTA}BOTTLES{PrintColor.NORMAL} (b or bottle, a or add)")
+        ui_manager.add_text_content(
+            f"\t- {PrintColor.RED}CONSUME{PrintColor.NORMAL} a bottle (c or consume)")
+        ui_manager.add_text_content(
+            f"\t- {PrintColor.CYAN}MOVE{PrintColor.NORMAL} bottle from one location to another (m or move)") # pylint: disable=line-too-long
+        ui_manager.add_text_content(
+            f"\t- {PrintColor.GREEN}SYNC{PrintColor.NORMAL} with spreadsheet (s or sync)")
+        ui_manager.add_text_content(
+            f"\t- {PrintColor.YELLOW}EXIT{PrintColor.NORMAL} (e or exit, q or quit)")
         ui_manager.add_text_content("\r\n")
-        ui_manager.add_input_content("\r\nSo... what would you like to do? ", __callback_function, input_timeout=120)
+        ui_manager.add_input_content(
+            "\r\nSo... what would you like to do? ", __callback_function, input_timeout=120)
 
         global CALLBACK_DATA
         while CALLBACK_DATA is not None and CALLBACK_DATA == DEFAULT_CALLBACK_DATA:
@@ -76,13 +84,15 @@ def what_to_do_options(ui_manager: TerminalUILite) -> str:
         passed = CALLBACK_DATA
         CALLBACK_DATA = DEFAULT_CALLBACK_DATA
         if passed is None or len(passed) == 0:
-            ui_manager.add_text_content(f"\r\nI'm sorry, but '{passed}' is not a valid input. Please try again...\r\n")
+            ui_manager.add_text_content(
+                f"\r\nI'm sorry, but '{passed}' is not a valid input. Please try again...\r\n")
             time.sleep(2)
             continue
         passed = passed.lower().strip()
         matched = OPTION_STATES.get(passed[0])
         if not matched:
-            ui_manager.add_text_content(f"\r\nI'm sorry, but '{passed}' is not a valid input. Please try again...\r\n")
+            ui_manager.add_text_content(
+                f"\r\nI'm sorry, but '{passed}' is not a valid input. Please try again...\r\n")
             time.sleep(2)
         ui_manager.clear_content()
     return matched

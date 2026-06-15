@@ -1,3 +1,4 @@
+""" Main FastAPI application for WineDB """
 import logging
 import os
 import signal
@@ -7,12 +8,15 @@ from importlib.metadata import version
 from fastapi import FastAPI
 
 from app.logging_config import configure_logging, LOGGER_NAME
-from app.routers import grapes, countries, regions, wine_types, locations, wine_supplies, keywords, food_pairings
+from app.routers import (
+    grapes, countries, regions, wine_types, locations, wine_supplies, keywords, food_pairings
+)
 
 configure_logging()
 logger = logging.getLogger(LOGGER_NAME)
 
-async def lifespan(app: FastAPI):
+async def lifespan(_: FastAPI):
+    """ Lifespan function to handle startup and shutdown events """
     logger.info("WineDB API startup complete")
     try:
         yield
@@ -38,18 +42,21 @@ app.include_router(food_pairings.ROUTER)
 
 @app.get("/")
 def read_root():
+    """ Root endpoint to check API status """
     logger.info("GET /")
     return {"Time": datetime.datetime.now().isoformat()}
 
 
 @app.get("/start")
 def start_api() -> dict:
+    """ Endpoint to trigger API startup """
     logger.info("GET /start")
     return {"status": "API is up and running!"}
 
 
 @app.get("/shutdown")
 def shutdown_api() -> dict:
+    """ Endpoint to trigger API shutdown """
     logger.info("GET /shutdown")
     # Sync data, run copier, then close out
     os.kill(os.getpid(), signal.SIGTERM)

@@ -1,3 +1,4 @@
+""" Handler functions for wine regions """
 import time
 from typing import Union, Tuple
 

@@ -5,6 +5,8 @@ from typing import Union, Tuple, List
 from app.cmd_app.api_utils.keywords import search_keywords_for_content, create_keyword
 from .utils import BottleHandler
 
+# pylint: disable=line-too-long
+
 
 def process_keyword_adding_input(bottler: BottleHandler) -> Tuple[List[str], List[str]]:
     """ Prompts user for grape variety information and processes it """
@@ -84,13 +86,13 @@ def process_keyword_input(bottler: BottleHandler, keyword_list_id: int) -> Tuple
         time.sleep(0.5)
 
         generic = bottler.handle_input(
-            f"Pick one of these or enter a new name? (type number or 'enter' to start a new keyword) ")
+            "Pick one of these or enter a new name? (type number or 'enter' to start a new keyword) ")
         if generic.isdigit() and 1 <= int(generic) <= len(search_results):
             name = search_results[int(generic)-1]
             split_name, split_id = name.split(", id: ")
             return split_name.strip(), split_id.strip()
         search_partial = generic.strip()
-        
+
     bottler.ui_manager.add_text_content(
         f"\r\nWe'll start a new keyword entry for '{search_partial}'")
     name = search_partial

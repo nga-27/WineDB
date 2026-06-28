@@ -15,8 +15,8 @@ def cleanup_tab_data(wine: WineSupply) -> Tuple[List[str], List[str]]:
             drink_date_list = [drink_date_list[0]] + drink_date_list[-4:] + \
                 [f"... and {length} more"]
         drink_date = "; ".join(drink_date_list)
-    drink_event_notes = wine.drank_event_notes if wine.drank_event_notes else "Unknown"
-    if drink_event_notes != "Unknown":
+    drink_event_notes = wine.drank_event_notes if wine.drank_event_notes else ""
+    if drink_event_notes != "":
         drink_event_notes_list = [
             n.strip() for n in drink_event_notes.split(";") if len(n.strip()) > 0]
         if len(drink_event_notes_list) > 5:
@@ -24,8 +24,8 @@ def cleanup_tab_data(wine: WineSupply) -> Tuple[List[str], List[str]]:
             drink_event_notes_list = [drink_event_notes_list[0]] + \
                 drink_event_notes_list[-4:] + [f"... and {length} more"]
         drink_event_notes = "; ".join(drink_event_notes_list)
-    drink_rating_notes = wine.drank_rating_notes if wine.drank_rating_notes else "Unknown"
-    if drink_rating_notes != "Unknown":
+    drink_rating_notes = wine.drank_rating_notes if wine.drank_rating_notes else ""
+    if drink_rating_notes != "":
         drink_rating_notes_list = [
             n.strip() for n in drink_rating_notes.split(";") if len(n.strip()) > 0]
         if len(drink_rating_notes_list) > 5:
@@ -57,12 +57,12 @@ def generate_consumed_tab(supply_wines: List[WineSupply]) -> List[dict]:
                 "Region": wine.region.name if wine.region else "Unknown",
                 "Country": wine.country.name if wine.country else "Unknown",
                 "PCT": wine.pct_alcohol if wine.pct_alcohol else "Unknown",
-                "Obtainment Note": wine.obtainment_note if wine.obtainment_note else "None",
+                "Obtainment Note": wine.obtainment_note if wine.obtainment_note else "",
                 "Location": wine.physical_location.name if wine.physical_location else "Unknown",
                 "Drink By Date": wine.drink_by_date if wine.drink_by_date else "Unknown",
                 "Keywords": ", ".join([keyword.keyword for keyword in wine.keywords]) \
                     if wine.keywords else "n/a",
-                "Tasting Notes": wine.tasting_notes if wine.tasting_notes else "None",
+                "Tasting Notes": wine.tasting_notes if wine.tasting_notes else "",
                 "Food Pairings": ", ".join([pairing.name for pairing in wine.food_pairings]) \
                     if wine.food_pairings else "n/a",
             })

@@ -37,13 +37,13 @@ def generate_easy_wine_tab(wine_supplies: List[WineSupply]) -> List[dict]:
                 "Vintage": wine.vintage,
                 "Region": wine.region.name if wine.region else "Unknown",
                 "Country": wine.country.name if wine.country else "Unknown",
-                "PCT": wine.pct_alcohol if wine.pct_alcohol else "Unknown",
-                "Quantity": wine.quantity if wine.quantity else "Unknown",
-                "Obtainment Note": wine.obtainment_note if wine.obtainment_note else "None",
+                "PCT": wine.pct_alcohol if wine.pct_alcohol else "0.0",
+                "Quantity": wine.quantity if wine.quantity else "1",
+                "Obtainment Note": wine.obtainment_note if wine.obtainment_note else "",
                 "Location": wine.physical_location.name if wine.physical_location else "Unknown",
                 "Drink By Date": wine.drink_by_date if wine.drink_by_date else "Unknown",
                 "Keywords": ", ".join([keyword.keyword for keyword in wine.keywords]) if wine.keywords else "n/a",
-                "Tasting Notes": wine.tasting_notes if wine.tasting_notes else "None",
+                "Tasting Notes": wine.tasting_notes if wine.tasting_notes else "",
                 "Food Pairings": ", ".join([pairing.name for pairing in wine.food_pairings]) \
                     if wine.food_pairings else "n/a",
             })

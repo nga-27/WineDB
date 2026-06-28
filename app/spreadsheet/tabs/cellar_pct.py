@@ -36,7 +36,7 @@ def generate_wine_by_pct(wine_supplies: List[WineSupply]) -> List[dict]:
             "Vintage": wine.vintage,
             "Region": wine.region.name if wine.region else "Unknown",
             "Country": wine.country.name if wine.country else "Unknown",
-            "Quantity": wine.quantity if wine.quantity else "Unknown",
+            "Quantity": wine.quantity if wine.quantity else "1",
             "Obtainment Note": wine.obtainment_note if wine.obtainment_note else "",
             "Location": wine.physical_location.name if wine.physical_location else "Unknown",
             "Drink By Date": wine.drink_by_date if wine.drink_by_date else "Unknown",

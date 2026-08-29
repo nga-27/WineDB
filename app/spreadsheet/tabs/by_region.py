@@ -30,19 +30,18 @@ def generate_by_region_tab(wine_supplies: List[WineSupply],
     tab_data: List[dict] = []
     for region_name, region_data in region_map.items():
         tab_data.append({"Name": " "})  # Add a separator row
-        tab_data.append({"Name": region_name, "Vineyard": region_data["description"]})  # Add a header row for the region
+        tab_data.append({"Name": region_name, "Type": region_data["description"]})  # Add a header row for the region
         for wine in region_data["wines"]:
             tab_data.append({
                 "Name": wine.name,
-                "Vineyard": wine.vendor if wine.vendor else "Unknown",
-                "Country": wine.country.name if wine.country else "Unknown",
-                "Quantity": wine.quantity if wine.quantity else "1",
                 "Type": wine.wine_type.name if wine.wine_type else "Unknown",
-                "Location": wine.physical_location.name if wine.physical_location else "Unknown",
-                "Grapes": ", ".join([grape.name for grape in wine.grapes]) if wine.grapes else "Unknown",
-                "Vintage": wine.vintage,
-                "PCT": wine.pct_alcohol if wine.pct_alcohol else "0.0",
                 "Quantity": wine.quantity if wine.quantity else "1",
+                "Location": wine.physical_location.name if wine.physical_location else "Unknown",
+                "Vineyard": wine.vendor if wine.vendor else "Unknown",
+                "Vintage": wine.vintage,
+                "Grapes": ", ".join([grape.name for grape in wine.grapes]) if wine.grapes else "Unknown",
+                "Country": wine.country.name if wine.country else "Unknown",
+                "PCT": wine.pct_alcohol if wine.pct_alcohol else "0.0",
                 "Obtainment Note": wine.obtainment_note if wine.obtainment_note else "",
                 "Drink By Date": wine.drink_by_date if wine.drink_by_date else "Unknown",
                 "Keywords": ", ".join([keyword.keyword for keyword in wine.keywords]) if wine.keywords else "n/a",

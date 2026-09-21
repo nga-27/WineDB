@@ -143,6 +143,8 @@ def process_name_input(bottler: BottleHandler) -> Tuple[str, str | None, bool]:
                 (len(vintage_response) > 0 and vintage_response.lower() in ["n", "no"]):
                 vintage = None
             if vintage is not None:
+                bottler.ui_manager.clear_content()
+                time.sleep(0.5)
                 vintage_response = bottler.handle_input(
                     "Should we move this bottle to a different location? [Y/n] ")
                 if vintage_response is not None and \

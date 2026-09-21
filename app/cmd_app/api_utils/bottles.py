@@ -10,6 +10,8 @@ from .locations import search_wine_locations_for_content
 # pylint: disable=line-too-long, broad-except,too-many-arguments, too-many-locals,
 # pylint: disable=too-many-return-statements, too-many-branches, too-many-statements
 
+_logger = logging.getLogger(LOGGER_NAME)
+
 def search_supply_for_content(name: str | None = None, vintage: str | None = None,
                               omit_consumed: bool = True, by_barcode: bool = False) -> List[str]:
     """ Placeholder function to search for content based on user input """
@@ -167,7 +169,11 @@ def decrease_bottle_supply(
         else:
             in_stock.append(item)
     # There only are consumed wines (or none at all), so reject attempt to consume
+    _logger.info("Results for %s (%s): %s", name, vintage, supply)
+    _logger.info("In-stock supplies: %s", in_stock)
+    _logger.info("Consumed supplies: %s", consumed_stock)
     if len(in_stock) == 0:
+        _logger.error(f"No non-consumed supply found for {name} ({vintage}).")
         return False, f"No non-consumed supply found for {name} ({vintage})."
     if len(in_stock) != 1:
         return False, f"Expected to find exactly one non-consumed supply for {name} ({vintage})" + \

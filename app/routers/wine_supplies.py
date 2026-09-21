@@ -1,8 +1,9 @@
 from typing import List
 import uuid
 import logging
+from urllib.parse import unquote_to_bytes
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Request
 from pydantic import BaseModel
 from sqlmodel import Session, select
 from sqlalchemy.orm import selectinload
@@ -18,6 +19,8 @@ from app.db.database import (
     PhysicalLocation,
 )
 
+
+_LOGGER = logging.getLogger(LOGGER_NAME)
 
 class WineSupplyCreate(BaseModel):
     name: str
@@ -62,10 +65,23 @@ ROUTER = APIRouter(
 )
 
 
+def _get_raw_query_value(request: Request, key: str, fallback: str | None = None) -> str | None:
+    """Decode a query value without interpreting literal plus signs as spaces."""
+    for parameter in request.scope.get("query_string", b"").split(b"&"):
+        raw_key, separator, raw_value = parameter.partition(b"=")
+        if separator and unquote_to_bytes(raw_key).decode("utf-8", errors="replace") == key:
+            return unquote_to_bytes(raw_value).decode("utf-8", errors="replace")
+    return fallback
+
+
 @ROUTER.get("/", status_code=200)
-def get_wine_supplies(name: str | None = None, vintage: str | None = None,
+def get_wine_supplies(request: Request, name: str | None = None, vintage: str | None = None,
                       by_barcode: bool = False) -> List[dict]:
     result: List[dict] = []
+    name = _get_raw_query_value(request, "name", name)
+    _LOGGER.info(
+        "Fetching wine supplies with name: %s, vintage: %s, by_barcode: %s",
+        name, vintage, by_barcode)
     with Session(get_db_interface().engine) as session:
         stmt = select(WineSupply)
         if by_barcode and name:

@@ -73,7 +73,7 @@ def process_name_input(bottler: BottleHandler) -> Tuple[str, str | None, bool]:
             search_results = search_supply_for_content(name=name, by_barcode=True)
             if len(search_results) == 0:
                 bottler.ui_manager.add_text_content(f"\r\nNo wine supply found matching UPC barcode '{name}'. Resetting.")
-                time.sleep(2)
+                time.sleep(5)
                 return "", None, False
             search_results.sort()
             for i, name in enumerate(search_results):
@@ -111,7 +111,7 @@ def process_name_input(bottler: BottleHandler) -> Tuple[str, str | None, bool]:
                 bottler.ui_manager.add_text_content(
                     f"\r\n\033[33mCouldn't find a bottle to consume named '{name_and_vintage}'\033[39m")
                 name = name_and_vintage
-                time.sleep(2)
+                time.sleep(5)
     elif "-q" in name:
         bottler.ui_manager.add_text_content("\r\nCanceling operation, returning to main menu.")
         time.sleep(2)
@@ -121,7 +121,7 @@ def process_name_input(bottler: BottleHandler) -> Tuple[str, str | None, bool]:
         search_results = search_supply_for_content(search_partial)
         if len(search_results) == 0:
             bottler.ui_manager.add_text_content(f"\r\nNo wine supply found matching '{search_partial}'. Resetting.")
-            time.sleep(2)
+            time.sleep(5)
             return "", None, False
         bottler.ui_manager.add_text_content("\r\n")
         search_results.sort()
@@ -158,12 +158,13 @@ def process_name_input(bottler: BottleHandler) -> Tuple[str, str | None, bool]:
                     else:
                         bottler.ui_manager.add_text_content(f"\r\n\033[31mSorry, something went wrong consuming a bottle of {name} ({vintage}) from the supply.\033[39m")
                         bottler.ui_manager.add_text_content(f"\r\nError: {error_message}\r\n")
+                        time.sleep(5)
                     time.sleep(2)
         else:
             bottler.ui_manager.add_text_content(
                 f"\r\n\033[33mCouldn't find a bottle to consume named '{name_and_vintage}'\033[39m")
             name = name_and_vintage
-            time.sleep(2)
+            time.sleep(5)
     return name, vintage, needs_entry
 
 

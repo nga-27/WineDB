@@ -27,7 +27,7 @@ def get_keywords(name: str | None = None, upc_vintage_sd_id: str | None = None) 
     with Session(get_db_interface().engine) as session:
         stmt = select(Keywords)
         if name:
-            stmt = stmt.where(Keywords.name.ilike(f"%{name}%"))
+            stmt = stmt.where(Keywords.keyword.ilike(f"%{name}%"))
         if upc_vintage_sd_id:
             stmt = stmt.join(SupplyKeywordsLink, Keywords.keyword_id == SupplyKeywordsLink.keyword_id)
             stmt = stmt.where(SupplyKeywordsLink.supply_id == upc_vintage_sd_id)

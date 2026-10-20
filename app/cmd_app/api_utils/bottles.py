@@ -12,14 +12,20 @@ from .locations import search_wine_locations_for_content
 
 _logger = logging.getLogger(LOGGER_NAME)
 
+def get_consumed_location_id() -> str:
+    """ Get the location ID for the "Consumed" location """
+    consumed_location_id = "NOT-A-REAL-ID"
+    consumed_location_id_list = search_wine_locations_for_content("Consumed")
+    if len(consumed_location_id_list) > 0:
+        consumed_location_id = consumed_location_id_list[0].split("id: ")[1]
+    return consumed_location_id
+
 def search_supply_for_content(name: str | None = None, vintage: str | None = None,
                               omit_consumed: bool = True, by_barcode: bool = False) -> List[str]:
     """ Placeholder function to search for content based on user input """
     consumed_location_id = "NOT-A-REAL-ID"
     if omit_consumed:
-        consumed_location_id_list = search_wine_locations_for_content("Consumed")
-        if len(consumed_location_id_list) > 0:
-            consumed_location_id = consumed_location_id_list[0].split("id: ")[1]
+        consumed_location_id = get_consumed_location_id()
     if name is None:
         results = requests.get("http://localhost:8282/wine_supplies", timeout=5)
         results_filtered = [\
@@ -57,10 +63,18 @@ def increase_bottle_supply(name: str, vintage: str) -> Tuple[bool, Union[None, s
             f"http://localhost:8282/wine_supplies?name={name}&vintage={vintage}", timeout=5)
     else:
         results = requests.get(f"http://localhost:8282/wine_supplies?name={name}", timeout=5)
-    if len(results.json()) != 1:
-        return False, "Expected to find exactly one supply for " + \
-            f"{name} ({vintage}), but found {len(results.json())}."
     supply = results.json()[0]
+    if len(results.json()) != 1:
+        consumed_location_id = get_consumed_location_id()
+        results_filtered = [
+            result for result in results.json() \
+                if result["physical_location_id"] != consumed_location_id]
+        if len(results_filtered) != 1:
+            _logger.warning("Expected to find exactly one supply for %s (%s), but found %d. %s",
+                            name, vintage, len(results.json()), results.text)
+            return False, "Expected to find exactly one supply for " + \
+                f"{name} ({vintage}), but found {len(results.json())}."
+        supply = results_filtered[0]
     bottle_id = supply["upc_vintage_sd_id"]
     response = requests.patch(
         "http://localhost:8282/wine_supplies/quantity",
@@ -126,11 +140,7 @@ def move_bottle_location(
         results = requests.get(f"http://localhost:8282/wine_supplies?name={name}", timeout=5)
     supply = results.json()
     results = requests.get("http://localhost:8282/locations", timeout=5)
-    consumed_location_id = "NOT-A-REAL-ID"
-    for location in results.json():
-        if location["name"] == "Consumed":
-            consumed_location_id = location["location_id"]
-            break
+    consumed_location_id = get_consumed_location_id()
     supply = [s for s in supply if s["physical_location_id"] != consumed_location_id]
     if len(supply) == 0:
         return False, f"No supply found for {name} ({vintage})."
@@ -161,8 +171,7 @@ def decrease_bottle_supply(
     supply = results.json()
     in_stock = []
     consumed_stock = []
-    locations = search_wine_locations_for_content()
-    consumed_id = [loc for loc in locations if "Consumed" in loc][0].split("id: ")[1]
+    consumed_id = get_consumed_location_id()
     for item in supply:
         if item["physical_location_id"] == consumed_id:
             consumed_stock.append(item)

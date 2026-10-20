@@ -2,9 +2,11 @@
 import time
 from typing import Tuple
 import uuid
+import logging
 
 from terminal_ui_lite import TerminalUILite
 
+from app.logging_config import LOGGER_NAME
 from app.cmd_app.api_utils.bottles import (
     search_supply_for_content, increase_bottle_supply, create_bottle_entry
 )
@@ -24,6 +26,7 @@ from .utils import BottleHandler
 
 # pylint: disable=line-too-long, too-many-locals, too-many-branches, too-many-statements, too-many-nested-blocks
 
+_LOGGER = logging.getLogger(LOGGER_NAME)
 
 def bottle_handler(ui_manager: TerminalUILite) -> bool:
     """ Handles adding bottles """
@@ -65,6 +68,7 @@ def process_name_input(bottler: BottleHandler) -> Tuple[str, str | None, bool]:
                 name_and_vintage = search_results[int(name_and_vintage)-1]
                 name = name_and_vintage.split(" (")[0]
                 vintage = name_and_vintage.split(" (")[1].split(") - ")[0]
+                _LOGGER.info(f"User selected existing supply: {name} ({vintage})")
                 vintage_response = bottler.handle_input(f"\r\nSame vintage as {vintage}? [Y/n] ")
                 if vintage_response is not None and \
                     (len(vintage_response) > 0 and vintage_response.lower() in ["n", "no"]):
@@ -75,11 +79,14 @@ def process_name_input(bottler: BottleHandler) -> Tuple[str, str | None, bool]:
                         (len(vintage_response) == 0 or vintage_response.lower() in ["y", "yes"]):
                         was_successful, error_message = increase_bottle_supply(name, vintage)
                         if was_successful:
+                            _LOGGER.info(f"Successfully added another bottle of {name} ({vintage}) to the supply.")
                             bottler.ui_manager.add_text_content(f"\r\n\033[32mAdded another bottle of {name} ({vintage}) to the supply!\033[39m")
                             needs_entry = False
                         else:
                             bottler.ui_manager.add_text_content(f"\r\n\033[31mSorry, something went wrong adding another bottle of {name} ({vintage}) to the supply.\033[39m")
                             bottler.ui_manager.add_text_content(f"\r\nError: {error_message}\r\n")
+                            _LOGGER.error(f"Error adding another bottle of {name} ({vintage}) to the supply: {error_message}")
+                            time.sleep(5)
                         time.sleep(2)
             else:
                 bottler.ui_manager.add_text_content(
